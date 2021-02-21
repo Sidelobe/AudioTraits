@@ -9,6 +9,7 @@
 #pragma once
 
 #include <catch2/catch.hpp>
+#include <cassert>
 
 /* Macro to detect if exceptions are disabled (works on GCC, Clang and MSVC) 3 */
 #ifndef __has_feature
@@ -25,6 +26,11 @@
     #undef REQUIRE_THROWS
     #define REQUIRE_THROWS(...)
 #endif
+
+// classic preprocessor hack to stringify -- double expansion is required
+// https://gcc.gnu.org/onlinedocs/gcc-4.8.5/cpp/Stringification.html
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 namespace TestCommon
 {
@@ -51,6 +57,17 @@ static inline std::vector<int> createRandomVectorInt(int length, int seed=0)
         sample = static_cast<int>(1000*dist(engine));
     }
     return result;
+}
+
+static inline std::string resolveTestFile(const std::string& path)
+{
+    // If source directory was defined during compilation use that instead of current working directory
+    #ifdef SOURCE_DIR
+        return std::string(TOSTRING(SOURCE_DIR)) + "/test/test_data/" + path;
+    #else
+        assert("SOURCE_DIR not defined!")
+    #endif
+
 }
 
 
