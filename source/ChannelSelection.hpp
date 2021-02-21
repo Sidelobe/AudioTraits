@@ -9,8 +9,9 @@
 
 #include <array>
 #include <numeric>
-#include <utility>
+#include <set>
 #include <vector>
+#include <utility>
 
 #include "Utils.hpp"
 
@@ -21,24 +22,46 @@ class SelectionItem
 {
 public:
     /** Discrete */
-    SelectionItem(int channel) : m_selectedChannels({channel})
+    SelectionItem(int channel) : m_selection({channel})
     {
         ASSERT(channel > 0, "invalid channel!");
     }
     
     /** Range */
-    SelectionItem(int first, int last) : m_selectedChannels(last - first + 1)
+    SelectionItem(int first, int last) : m_selection(last - first + 1)
     {
         ASSERT(first > 0 && last >= first, "invalid range!");
-        std::iota(m_selectedChannels.begin(), m_selectedChannels.end(), first);
+        std::iota(m_selection.begin(), m_selection.end(), first);
     }
     
-    int size() const { return static_cast<int>(m_selectedChannels.size()); }
+    std::set<int> get() const { return { m_selection.begin(), m_selection.end() }; }
+    int size() const { return static_cast<int>(m_selection.size()); }
 
 private:
-    std::vector<int> m_selectedChannels;
+    std::vector<int> m_selection;
 };
 
+
+class ChannelSelection
+{
+    using size_type = std::size_t;
+public:
+    ChannelSelection(std::initializer_list<SelectionItem> selectionItems) : m_selectionItems(selectionItems) {}
+    
+    std::set<int> get() const
+    {
+        std::set<int> result;
+        for (auto& item : m_selectionItems) {
+            std::set<int> itemSelection = item.get();
+            result.insert(itemSelection.begin(), itemSelection.end());
+        }
+        return result;
+    }
+    
+private:
+    std::vector<SelectionItem> m_selectionItems;
+
+};
 
 
 } // namespace slb
