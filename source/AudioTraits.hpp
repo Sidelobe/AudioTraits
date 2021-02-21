@@ -19,9 +19,12 @@ namespace AudioTraits {
 template<typename F, typename ... Is>
 static bool check(const ISignal& signal, const ChannelSelection& channelSelection, Is ... i)
 {
-    // TODO: checks if channel selection is feasible for this signal
-    
-    return F::eval(signal, channelSelection.get(), std::forward<decltype(i)>(i)...);
+    // TODO: empty selection => all channels??
+    const std::set<int> selectedChannels = channelSelection.get();
+    ASSERT(selectedChannels.size() <= signal.getNumChannels());
+    std::for_each(selectedChannels.begin(), selectedChannels.end(), [&signal](auto& i) { ASSERT(i<=signal.getNumChannels()); });
+
+    return F::eval(signal, selectedChannels, std::forward<decltype(i)>(i)...);
 }
 
 
