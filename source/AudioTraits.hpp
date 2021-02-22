@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <iostream>
-
 #include "ChannelSelection.hpp"
 #include "SignalAdapters.hpp"
 
