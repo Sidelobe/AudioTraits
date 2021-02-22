@@ -5,15 +5,13 @@
 //
 //  © 2021 Lorenz Bucher - all rights reserved
 
-
 #pragma once
 
 #include <catch2/catch.hpp>
-#include <cassert>
 
 /* Macro to detect if exceptions are disabled (works on GCC, Clang and MSVC) 3 */
 #ifndef __has_feature
-#define __has_feature(x) 0
+    #define __has_feature(x) 0
 #endif
 #if !__has_feature(cxx_exceptions) && !defined(__cpp_exceptions) && !defined(__EXCEPTIONS) && !defined(_CPPUNWIND)
   #define EXCEPTIONS_DISABLED
@@ -21,10 +19,13 @@
 
 // When exceptions are disbled, we redefine catch2's REQUIRE_THROWS, so we can compile.
 // Any REQUIRE_THROWS statements in tests will dissappear / do nothing
-#if __EXCEPTIONS == 0
+#ifdef EXCEPTIONS_DISABLED
     #define REQUIRE_THROWS_CATCH2 REQUIRE_THROWS
     #undef REQUIRE_THROWS
     #define REQUIRE_THROWS(...)
+    #define REQUIRE_NOTHROW_CATCH2 REQUIRE_NOTHROW
+    #undef REQUIRE_NOTHROW
+    #define REQUIRE_NOTHROW(...)
 #endif
 
 // classic preprocessor hack to stringify -- double expansion is required
