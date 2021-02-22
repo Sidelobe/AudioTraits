@@ -47,8 +47,10 @@ target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 # TEST TARGET
 set(TEST_NAME "${PROJECT_NAME}Test")
 file(GLOB_RECURSE source_test "test/tests/*.c*")
-file(GLOB main_file "test/main.cpp" "test/TestCommon.hpp")
+file(GLOB main_file "test/main.cpp")
 list(APPEND source_test ${main_file})
+file(GLOB support_files "test/*.hpp")
+list(APPEND source_test ${support_files})
 add_executable(${TEST_NAME} ${source_test})
 assign_include_dirs_from_sources(${TEST_NAME})
 target_include_directories(${TEST_NAME} PRIVATE "source")
@@ -57,6 +59,9 @@ target_link_libraries(${TEST_NAME} PUBLIC ${PROJECT_NAME})
 # create source groups
 source_group("Sources" FILES ${source})
 source_group("Tests" FILES ${source_test})
+
+# pass in source directory as 'SOURCE_DIR' define so we can access resources relative to that
+target_compile_definitions(${TEST_NAME} PRIVATE SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR})
 
 if (CODE_COVERAGE)
   message("Code Coverage tracking enabled")
@@ -80,6 +85,8 @@ target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils)
 add_subdirectory(test/external-utils/MemorySentinel)
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/MemorySentinel/source)
 target_link_libraries(${TEST_NAME} PRIVATE MemorySentinel)
+
+target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/AudioFile)
 
 # Compiler Settings
 target_compile_options(${TEST_NAME} PRIVATE
