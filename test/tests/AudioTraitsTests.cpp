@@ -14,18 +14,21 @@
 using namespace slb::AudioTraits;
 using namespace TestCommon;
 
+// Dummy implementations for testing
 struct DummyTrait
 {
-    static bool called;
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels)
     {
         UNUSED(signal);
-        UNUSED(selectedChannels);
         called = true;
+        lastSelectedChannels = selectedChannels;
         return true;
     }
+    static bool called;
+    static std::set<int> lastSelectedChannels;
 };
 bool DummyTrait::called = false;
+std::set<int> DummyTrait::lastSelectedChannels{};
 
 class DummySignal : ISignal
 {
@@ -42,6 +45,7 @@ private:
 TEST_CASE("AudioTraits Generic Tests")
 {
     DummyTrait::called = false;
+    DummyTrait::lastSelectedChannels = {};
     SECTION("Empty signal") {
         SignalAdapterRaw signal(nullptr, 0, 0);
         REQUIRE(check<DummyTrait>(signal, {}));
@@ -57,7 +61,14 @@ TEST_CASE("AudioTraits Generic Tests")
         
         REQUIRE_THROWS(check<DummyTrait>(signal, {1, 2, 3}));
         REQUIRE_THROWS(check<DummyTrait>(signal, {3}));
+        REQUIRE_THROWS(check<DummyTrait>(signal, {1, {1, 3}}));
         REQUIRE_FALSE(DummyTrait::called);
+    }
+    
+    SECTION("Empty selection = all channels") {
+        SignalAdapterRaw signal(nullptr, 4, 0);
+        REQUIRE(check<DummyTrait>(signal, {}));
+        REQUIRE(DummyTrait::lastSelectedChannels == std::set<int>{1, 2, 3, 4});
     }
 }
 

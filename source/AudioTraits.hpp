@@ -17,14 +17,21 @@ namespace AudioTraits {
 
 // MARK: - Infrastructure
 template<typename F, typename ... Is>
-static bool check(const ISignal& signal, const ChannelSelection& channelSelection, Is ... i)
+static bool check(const ISignal& signal, const ChannelSelection& channelSelection, Is ... traitParams)
 {
-    // TODO: empty selection => all channels??
-    const std::set<int> selectedChannels = channelSelection.get();
+    std::set<int> selectedChannels = channelSelection.get();
     ASSERT(selectedChannels.size() <= signal.getNumChannels());
     std::for_each(selectedChannels.begin(), selectedChannels.end(), [&signal](auto& i) { ASSERT(i<=signal.getNumChannels()); });
 
-    return F::eval(signal, selectedChannels, std::forward<decltype(i)>(i)...);
+    // Empty selection means all channels
+    if (selectedChannels.empty()) {
+        std::set<int>::iterator it = selectedChannels.end();
+        for (int i=1; i <= signal.getNumChannels(); ++i) {
+           it = selectedChannels.insert(it, i);
+        }
+    }
+    
+    return F::eval(signal, selectedChannels, std::forward<decltype(traitParams)>(traitParams)...);
 }
 
 
