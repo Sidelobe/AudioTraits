@@ -71,6 +71,13 @@ static inline std::string resolveTestFile(const std::string& path)
 
 }
 
+/**
+ * Returns the size of a static C array in number of elements. Also works for multidimensional arrays.
+ */
+template<class T> constexpr int getRawArrayLength(const T& a)
+{
+    return sizeof(a) / sizeof(typename std::remove_all_extents<T>::type);
+}
 
 
 } // namespace TestCommon

@@ -19,7 +19,9 @@ struct DummyTrait
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels)
     {
-        UNUSED(signal);
+        // Verify I cannot modify signal in this context
+        static_assert(std::is_assignable<decltype(signal.getData()[0][5]), float >::value == false, "Cannot modify audio data");
+        static_assert(std::is_assignable<decltype(signal.getData()[0]), float* >::value == false, "Cannnot modify pointers");
         called = true;
         lastSelectedChannels = selectedChannels;
         return true;
@@ -80,13 +82,13 @@ TEST_CASE("AudioTraits::SignalOnChannels Tests")
 
     float* rawBuffer[] = { dataL.data(), dataR.data() };
 
-    SignalAdapterRaw signal(rawBuffer, 2u, dataL.size());
+    SignalAdapterRaw signal(rawBuffer, 2, (int) dataL.size());
 
     REQUIRE(check<SignalOnChannels>(signal, {{1,2}}));
     REQUIRE_FALSE(check<SignalOnChannels>(signal, {1,2}, 3.f)); // positive threshold never reached
 
     float* rawBufferL[] = { dataL.data(), zeros.data() };
-    SignalAdapterRaw signalLeftOnly(rawBufferL, 2u, dataL.size());
+    SignalAdapterRaw signalLeftOnly(rawBufferL, 2, (int) dataL.size());
     REQUIRE(check<SignalOnChannels>(signalLeftOnly, {1}));
     REQUIRE_FALSE(check<SignalOnChannels>(signalLeftOnly, {2}));
     REQUIRE_FALSE(check<SignalOnChannels>(signalLeftOnly, {2}, -40));

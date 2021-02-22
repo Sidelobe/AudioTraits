@@ -38,11 +38,6 @@ public:
     m_numChannels(numChannels),
     m_numSamples(numSamples),
     m_signal(rawSignal) {}
-    
-    /** convenience ctor */
-    SignalAdapterRaw(const float* const* rawSignal, std::size_t numChannels, std::size_t numSamples)
-        : SignalAdapterRaw(rawSignal, static_cast<int>(numChannels), static_cast<int>(numSamples))
-    {}
 
     int getNumChannels() const override { return m_numChannels; }
     int getNumSamples()  const override { return m_numSamples;  }
