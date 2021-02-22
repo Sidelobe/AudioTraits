@@ -22,6 +22,9 @@
   #define EXCEPTIONS_DISABLED
 #endif
 
+namespace slb
+{
+
 // MARK: - Assertion handling
 namespace Assertions
 {
@@ -52,3 +55,22 @@ static constexpr void handleAssert(const char* conditionAsText, bool condition, 
 #endif
 }
 } // namespace Assertions
+
+
+namespace Utils
+{
+
+static inline float dB2Linear(float value_dB)
+{
+    return powf(10.f, (value_dB/20.f));
+}
+
+static inline float linear2Db(float value_linear)
+{
+    return 20 * log10f(value_linear);
+}
+
+} // namespace Utils
+
+
+} // namespace slb

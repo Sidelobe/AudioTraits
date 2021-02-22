@@ -74,6 +74,8 @@ TEST_CASE("AudioTraits Generic Tests")
     }
 }
 
+// MARK: - Individual Audio Traits
+
 TEST_CASE("AudioTraits::SignalOnChannels Tests")
 {
     std::vector<float> dataL = createRandomVector(16, 333);

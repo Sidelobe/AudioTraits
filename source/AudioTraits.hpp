@@ -40,14 +40,7 @@ struct SignalOnChannels
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float threshold_dB = -96.0)
     {
-        std::cout << "Called SignalOnChannels with signal{" << std::to_string(signal.getNumChannels()) << ","
-        << std::to_string(signal.getNumSamples()) << "} channel selection=";
-        for (auto& ch : selectedChannels) {
-            std::cout << std::to_string(ch) << ", ";
-        }
-        std::cout << " threshold_dB=" << std::to_string(threshold_dB) << std::endl;
-        
-        float threshold_linear = powf(10, threshold_dB / 20.f);
+        float threshold_linear = Utils::dB2Linear(threshold_dB);
         
         for (int ch = 0; ch < signal.getNumChannels(); ++ch) {
             int chNumber = ch + 1; // channels are 1-based

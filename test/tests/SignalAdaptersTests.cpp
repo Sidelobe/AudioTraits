@@ -38,7 +38,7 @@ TEST_CASE("SignalAdapters Test Raw Adapter")
     std::vector<float> dataR = createRandomVector(16, 666);
     float* rawBuffer[] = { dataL.data(), dataR.data() };
 
-    SignalAdapterRaw adaptedRaw(rawBuffer, 2u, dataL.size());
+    SignalAdapterRaw adaptedRaw(rawBuffer, 2, (int) dataL.size());
     
     REQUIRE(adaptedRaw.getNumChannels() == 2);
     REQUIRE(adaptedRaw.getNumSamples() == 16);
@@ -51,7 +51,7 @@ TEST_CASE("SignalAdapters Test std::vector<vector>> Adapter")
     
     std::vector<std::vector<float>> vecvec{createRandomVector(16, 333), createRandomVector(16, 666)};
 
-    SignalAdapter2DStdVector adaptedVecVec(vecvec);
+    SignalAdapterStdVecVec adaptedVecVec(vecvec);
     
     REQUIRE(adaptedVecVec.getNumChannels() == 2);
     REQUIRE(adaptedVecVec.getNumSamples() == 16);
@@ -61,5 +61,5 @@ TEST_CASE("SignalAdapters Test std::vector<vector>> Adapter")
     REQUIRE(vecvec.data()[1].data() == &adaptedVecVec.getData()[1][0]);
 
     // check that adapter cannot be constructed from an rvalue (without a stack object)
-    static_assert(std::is_constructible<SignalAdapter2DStdVector, std::vector<std::vector<float>>>::value == false, "cannot construct from a vector<vector> r-value!");
+    static_assert(std::is_constructible<SignalAdapterStdVecVec, std::vector<std::vector<float>>>::value == false, "cannot construct from a vector<vector> r-value!");
 }

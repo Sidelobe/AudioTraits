@@ -19,7 +19,7 @@ namespace AudioTraits {
 /**
  * Signal Interface - wraps around an existing signal of arbitrary type.
  *
- * Guarantees: will no modify the underlying signal, only analyze it
+ * Guarantees: will not modify the underlying signal, only analyze it
  */
 class ISignal
 {
@@ -27,7 +27,7 @@ public:
     virtual ~ISignal() = default;
     virtual int getNumChannels() const = 0;
     virtual int getNumSamples() const = 0;
-    virtual const float* const* getData() const = 0; // TODO: make const float const* const* or does this only make sense in ctor ???
+    virtual const float* const* getData() const = 0;
 };
 
 
@@ -49,10 +49,10 @@ private:
     const float* const* m_signal;
 };
 
-class SignalAdapter2DStdVector : public ISignal
+class SignalAdapterStdVecVec : public ISignal
 {
 public:
-    SignalAdapter2DStdVector(std::vector<std::vector<float>>& vector2D) :
+    SignalAdapterStdVecVec(std::vector<std::vector<float>>& vector2D) :
         m_vector2D(vector2D),
         m_channelPointers(vector2D.size())
     {
