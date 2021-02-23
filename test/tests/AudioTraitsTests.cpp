@@ -90,7 +90,7 @@ void scale(std::vector<std::vector<float>>& input, ChannelSelection channelSelec
 
 // MARK: - Individual Audio Traits
 
-TEST_CASE("AudioTraits::SignalOnChannels Tests")
+TEST_CASE("AudioTraits::SignalOnAllChannels Tests")
 {
     std::vector<float> dataL = createRandomVector(16, 333);
     std::vector<float> dataR = createRandomVector(16, 666);
@@ -99,27 +99,27 @@ TEST_CASE("AudioTraits::SignalOnChannels Tests")
     SignalAdapterStdVecVec signal(buffer);
 
     SECTION("Full scale signal") {
-        REQUIRE(check<SignalOnChannels>(signal, {{1,2}}));
-        REQUIRE_FALSE(check<SignalOnChannels>(signal, {1,2}, 3.f)); // positive threshold never reached
+        REQUIRE(check<SignalOnAllChannels>(signal, {{1,2}}));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signal, {1,2}, 3.f)); // positive threshold never reached
 
         std::vector<std::vector<float>> bufferL = { dataL, zeros };
         SignalAdapterStdVecVec signalLeftOnly(bufferL);
-        REQUIRE(check<SignalOnChannels>(signalLeftOnly, {1}));
-        REQUIRE_FALSE(check<SignalOnChannels>(signalLeftOnly, {2}));
-        REQUIRE_FALSE(check<SignalOnChannels>(signalLeftOnly, {2}, -40));
-        REQUIRE_FALSE(check<SignalOnChannels>(signalLeftOnly, {2}, -144));
+        REQUIRE(check<SignalOnAllChannels>(signalLeftOnly, {1}));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signalLeftOnly, {2}));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signalLeftOnly, {2}, -40));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signalLeftOnly, {2}, -144));
     }
     SECTION("Reduced signal on one channel") {
         // scale dataR to -40dB
         scale(buffer, {2}, Utils::dB2Linear(-40.f));
-        REQUIRE_FALSE(check<SignalOnChannels>(signal, {2}, -40.f));
-        REQUIRE_FALSE(check<SignalOnChannels>(signal, {1, 2}, -40.f)); // channel 1 has signal, but channel 2 hasn't ->false
-        REQUIRE(check<SignalOnChannels>(signal, {1}, -40.f));
-        REQUIRE(check<SignalOnChannels>(signal, {1, 2}, -50.f));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signal, {2}, -40.f));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signal, {1, 2}, -40.f)); // channel 1 has signal, but channel 2 hasn't ->false
+        REQUIRE(check<SignalOnAllChannels>(signal, {1}, -40.f));
+        REQUIRE(check<SignalOnAllChannels>(signal, {1, 2}, -50.f));
         
         float absmax = std::max(abs(*std::min_element(dataR.begin(), dataR.end())), *std::max_element(dataR.begin(), dataR.end()));
         float pointWhereSignalIsDetected_dB = -40.f + Utils::linear2Db(absmax);
-        REQUIRE(check<SignalOnChannels>(signal, {2}, pointWhereSignalIsDetected_dB - 1e-5f)); // - tolerance
+        REQUIRE(check<SignalOnAllChannels>(signal, {2}, pointWhereSignalIsDetected_dB - 1e-5f)); // - tolerance
     }
     
 }

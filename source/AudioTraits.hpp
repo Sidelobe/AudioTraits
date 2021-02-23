@@ -36,9 +36,9 @@ static bool check(const ISignal& signal, const ChannelSelection& channelSelectio
 // MARK: - Audio Traits
 
 /**
- * Evaluates if there is at least one sample above the threshold on all of the selected channels.
+ * Evaluates if all of the selected channels have at least one sample above the threshold (absolute value)
  */
-struct SignalOnChannels
+struct SignalOnAllChannels
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float threshold_dB = -96.f)
     {
