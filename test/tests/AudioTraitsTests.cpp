@@ -25,6 +25,7 @@ struct DummyTrait
         // Verify I cannot modify signal in this context
         static_assert(std::is_assignable<decltype(signal.getData()[0][5]), float >::value == false, "Cannot modify audio data");
         static_assert(std::is_assignable<decltype(signal.getData()[0]), float* >::value == false, "Cannnot modify pointers");
+        static_assert(std::is_assignable<decltype(signal.getChannelDataCopy(0)[0]), float >::value == true, "Can modify copy");
         called = true;
         lastSelectedChannels = selectedChannels;
         return true;
@@ -35,13 +36,14 @@ struct DummyTrait
 bool DummyTrait::called = false;
 std::set<int> DummyTrait::lastSelectedChannels{};
 
-class DummySignal : ISignal
+class DummySignal : public ISignal
 {
 public:
     DummySignal(int numChannels, int numSamples) : m_numChannels(numChannels), m_numSamples(numSamples) {}
     int getNumChannels() const override { return m_numChannels; }
     int getNumSamples()  const override { return m_numSamples;  }
     const float* const* getData() const override { return nullptr; }
+    std::vector<float> getChannelDataCopy(int channelIndex) const override { return {}; UNUSED(channelIndex); }
 private:
     const int m_numChannels;
     const int m_numSamples;
@@ -52,13 +54,13 @@ TEST_CASE("AudioTraits Generic Tests")
     DummyTrait::called = false;
     DummyTrait::lastSelectedChannels = {};
     SECTION("Empty signal") {
-        SignalAdapterRaw signal(nullptr, 0, 0);
+        DummySignal signal(0, 0);
         REQUIRE(check<DummyTrait>(signal, {}));
         REQUIRE(DummyTrait::called);
     }
 
     SECTION("Illegal channel selections") {
-        SignalAdapterRaw signal(nullptr, 2, 0);
+        DummySignal signal(2, 0);
         REQUIRE(check<DummyTrait>(signal, {1, 2}));
         REQUIRE(DummyTrait::called); DummyTrait::called = false;
         REQUIRE(check<DummyTrait>(signal, {{1, 2}}));
@@ -71,7 +73,7 @@ TEST_CASE("AudioTraits Generic Tests")
     }
     
     SECTION("Empty selection = all channels") {
-        SignalAdapterRaw signal(nullptr, 4, 0);
+        DummySignal signal(4, 0);
         REQUIRE(check<DummyTrait>(signal, {}));
         REQUIRE(DummyTrait::lastSelectedChannels == std::set<int>{1, 2, 3, 4});
     }
