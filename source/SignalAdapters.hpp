@@ -29,7 +29,7 @@ public:
     virtual int getNumChannels() const = 0;
     virtual int getNumSamples() const = 0;
     
-    /** @returns a non-modifiable reference to the data of the given channelIndex (0-based) */
+    /** @returns a non-modifiable reference to the multichannel data */
     virtual const float* const* getData() const = 0;
     
     /** @returns a copy of the data of the given channelIndex (0-based) */
@@ -43,9 +43,9 @@ class SignalAdapterRaw : public ISignal
 {
 public:
     SignalAdapterRaw(const float* const* rawSignal, int numChannels, int numSamples) :
-    m_numChannels(numChannels),
-    m_numSamples(numSamples),
-    m_signal(rawSignal) {}
+        m_numChannels(numChannels),
+        m_numSamples(numSamples),
+        m_signal(rawSignal) {}
 
     int getNumChannels() const override { return m_numChannels; }
     int getNumSamples()  const override { return m_numSamples; }

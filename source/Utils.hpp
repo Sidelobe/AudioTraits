@@ -67,7 +67,7 @@ static inline float dB2Linear(float value_dB)
 
 static inline float linear2Db(float value_linear)
 {
-    return 20 * log10f(value_linear);
+    return 20.f * log10f(value_linear);
 }
 
 } // namespace Utils

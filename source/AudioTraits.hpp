@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 #include "ChannelSelection.hpp"
 #include "SignalAdapters.hpp"
 
@@ -44,15 +46,13 @@ struct SignalOnAllChannels
     {
         const float threshold_linear = Utils::dB2Linear(threshold_dB);
         for (int chNumber : selectedChannels) {
-            int ch = chNumber - 1; // channels are 1-based, indices 0-based
-            bool signalOnThisChannel = false;
-            for (int s = 0; s < signal.getNumSamples(); ++s) {
-                if (abs(signal.getData()[ch][s]) > threshold_linear) {
-                    signalOnThisChannel = true;
-                    break;
-                }
+            auto channelSignal= signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
+            // find absolute max sample in channel signal
+            auto minmax = std::minmax_element(channelSignal.begin(), channelSignal.end());
+            float absmax = std::max(std::abs(*std::get<0>(minmax)), *std::get<1>(minmax));
+            if (absmax < threshold_linear) {
+                return false; // one channel without signal is enough to fail
             }
-            if (!signalOnThisChannel) { return false; }// one channel without signal enough
         }
         return true;
     }
