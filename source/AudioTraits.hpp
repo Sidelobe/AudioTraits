@@ -34,23 +34,27 @@ static bool check(const ISignal& signal, const ChannelSelection& channelSelectio
 
 
 // MARK: - Audio Traits
+
+/**
+ * Evaluates if there is at least one sample above the threshold on all of the selected channels.
+ */
 struct SignalOnChannels
 {
-    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float threshold_dB = -96.0)
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float threshold_dB = -96.f)
     {
-        float threshold_linear = Utils::dB2Linear(threshold_dB);
-        
-        for (int ch = 0; ch < signal.getNumChannels(); ++ch) {
-            int chNumber = ch + 1; // channels are 1-based
-            if (selectedChannels.find(chNumber) != selectedChannels.end()) {
-                for (int s = 0; s < signal.getNumSamples(); ++s) {
-                    if (signal.getData()[ch][s] > threshold_linear) {
-                        return true; // one sample above threshold is enough
-                    }
+        const float threshold_linear = Utils::dB2Linear(threshold_dB);
+        for (int chNumber : selectedChannels) {
+            int ch = chNumber - 1; // channels are 1-based, indices 0-based
+            bool signalOnThisChannel = false;
+            for (int s = 0; s < signal.getNumSamples(); ++s) {
+                if (abs(signal.getData()[ch][s]) > threshold_linear) {
+                    signalOnThisChannel = true;
+                    break;
                 }
             }
+            if (!signalOnThisChannel) { return false; }// one channel without signal enough
         }
-        return false;
+        return true;
     }
 };
 
