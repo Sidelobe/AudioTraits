@@ -30,7 +30,9 @@ public:
     virtual const float* const* getData() const = 0;
 };
 
-
+/**
+ * Adapts a signal with raw pointers (float**) to the Signal Interface
+ */
 class SignalAdapterRaw : public ISignal
 {
 public:
@@ -40,8 +42,8 @@ public:
     m_signal(rawSignal) {}
 
     int getNumChannels() const override { return m_numChannels; }
-    int getNumSamples()  const override { return m_numSamples;  }
-    const float* const* getData()    const override { return m_signal;  }
+    int getNumSamples()  const override { return m_numSamples; }
+    const float* const* getData() const override { return m_signal; }
 
 private:
     const int m_numChannels;
@@ -49,6 +51,9 @@ private:
     const float* const* m_signal;
 };
 
+/**
+ * Adapts a std::vector<std::vector<float>> signal to the Signal Interface
+ */
 class SignalAdapterStdVecVec : public ISignal
 {
 public:
@@ -62,8 +67,8 @@ public:
     }
     
     int getNumChannels() const override { return static_cast<int>(m_vector2D.size()); }
-    int getNumSamples()  const override { return static_cast<int>(m_vector2D.at(0).size());  }
-    const float* const* getData()    const override { return m_channelPointers.data();  }
+    int getNumSamples()  const override { return static_cast<int>(m_vector2D.at(0).size()); }
+    const float* const* getData() const override { return m_channelPointers.data(); }
 
 private:
     const std::vector<std::vector<float>>& m_vector2D;
