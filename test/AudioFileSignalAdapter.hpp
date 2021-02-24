@@ -14,7 +14,7 @@
 
 /** An adapter for AudioFile objects */
 template<typename T>
-class SignalAdapterAudioFile : public slb::AudioTraits::ISignal
+class SignalAdapterAudioFile : public slb::AudioTraits::SignalAdapterStdVecVec
 {
 public:
     /**
@@ -22,19 +22,12 @@ public:
      * @note This object holds a reference to the input data --  will not compile when given an rvalue
      */
     explicit SignalAdapterAudioFile(AudioFile<T>& audioFile) :
-        m_audioFile(audioFile),
-        m_channelPointers(audioFile.getNumChannels())
-    {
-        for (int i = 0; i < static_cast<int>(m_audioFile.getNumChannels()); ++i) {
-            m_channelPointers[i] = m_audioFile.samples[i].data();
-        }
-    }
+        SignalAdapterStdVecVec(audioFile.samples),
+        m_audioFile(audioFile) {}
     
     int getNumChannels() const override { return static_cast<int>(m_audioFile.getNumChannels()); }
-    int getNumSamples()  const override { return static_cast<int>(m_audioFile.getNumSamplesPerChannel());  }
-    const float* const* getData()    const override { return m_channelPointers.data();  }
+    int getNumSamples()  const override { return static_cast<int>(m_audioFile.getNumSamplesPerChannel()); }
 
 private:
     const AudioFile<T>& m_audioFile;
-    std::vector<const float*> m_channelPointers;
 };

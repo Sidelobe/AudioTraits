@@ -7,11 +7,14 @@
 
 #include "TestCommon.hpp"
 
+#include <algorithm>
 #include <vector>
 
 #include "AudioTraits.hpp"
+#include "Utils.hpp"
 
-using namespace slb::AudioTraits;
+using namespace slb;
+using namespace AudioTraits;
 using namespace TestCommon;
 
 // Dummy implementations for testing
@@ -22,6 +25,7 @@ struct DummyTrait
         // Verify I cannot modify signal in this context
         static_assert(std::is_assignable<decltype(signal.getData()[0][5]), float >::value == false, "Cannot modify audio data");
         static_assert(std::is_assignable<decltype(signal.getData()[0]), float* >::value == false, "Cannnot modify pointers");
+        static_assert(std::is_assignable<decltype(signal.getChannelDataCopy(0)[0]), float >::value == true, "Can modify copy");
         called = true;
         lastSelectedChannels = selectedChannels;
         return true;
@@ -32,13 +36,14 @@ struct DummyTrait
 bool DummyTrait::called = false;
 std::set<int> DummyTrait::lastSelectedChannels{};
 
-class DummySignal : ISignal
+class DummySignal : public ISignal
 {
 public:
     DummySignal(int numChannels, int numSamples) : m_numChannels(numChannels), m_numSamples(numSamples) {}
     int getNumChannels() const override { return m_numChannels; }
     int getNumSamples()  const override { return m_numSamples;  }
     const float* const* getData() const override { return nullptr; }
+    std::vector<float> getChannelDataCopy(int channelIndex) const override { return {}; UNUSED(channelIndex); }
 private:
     const int m_numChannels;
     const int m_numSamples;
@@ -49,13 +54,13 @@ TEST_CASE("AudioTraits Generic Tests")
     DummyTrait::called = false;
     DummyTrait::lastSelectedChannels = {};
     SECTION("Empty signal") {
-        SignalAdapterRaw signal(nullptr, 0, 0);
+        DummySignal signal(0, 0);
         REQUIRE(check<DummyTrait>(signal, {}));
         REQUIRE(DummyTrait::called);
     }
 
     SECTION("Illegal channel selections") {
-        SignalAdapterRaw signal(nullptr, 2, 0);
+        DummySignal signal(2, 0);
         REQUIRE(check<DummyTrait>(signal, {1, 2}));
         REQUIRE(DummyTrait::called); DummyTrait::called = false;
         REQUIRE(check<DummyTrait>(signal, {{1, 2}}));
@@ -68,31 +73,56 @@ TEST_CASE("AudioTraits Generic Tests")
     }
     
     SECTION("Empty selection = all channels") {
-        SignalAdapterRaw signal(nullptr, 4, 0);
+        DummySignal signal(4, 0);
         REQUIRE(check<DummyTrait>(signal, {}));
         REQUIRE(DummyTrait::lastSelectedChannels == std::set<int>{1, 2, 3, 4});
     }
 }
 
+/** helper function to scale a vecvec */
+void scale(std::vector<std::vector<float>>& input, ChannelSelection channelSelection, float factorLinear)
+{
+    auto selectedChannels = channelSelection.get();
+    for (int ch=0; ch < (int)input.size(); ++ch) {
+        if (selectedChannels.find(ch+1) != selectedChannels.end()) {
+            std::transform(input[ch].cbegin(), input[ch].cend(), input[ch].begin(), [factorLinear](auto& s) -> float { return s*factorLinear; });
+        }
+    }
+}
+
 // MARK: - Individual Audio Traits
 
-TEST_CASE("AudioTraits::SignalOnChannels Tests")
+TEST_CASE("AudioTraits::SignalOnAllChannels Tests")
 {
     std::vector<float> dataL = createRandomVector(16, 333);
     std::vector<float> dataR = createRandomVector(16, 666);
     std::vector<float> zeros(16, 0);
+    std::vector<std::vector<float>> buffer = { dataL, dataR };
+    SignalAdapterStdVecVec signal(buffer);
 
-    float* rawBuffer[] = { dataL.data(), dataR.data() };
+    SECTION("Full scale signal") {
+        REQUIRE(check<SignalOnAllChannels>(signal, {{1,2}}));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signal, {1,2}, 3.f)); // positive threshold never reached
 
-    SignalAdapterRaw signal(rawBuffer, 2, (int) dataL.size());
-
-    REQUIRE(check<SignalOnChannels>(signal, {{1,2}}));
-    REQUIRE_FALSE(check<SignalOnChannels>(signal, {1,2}, 3.f)); // positive threshold never reached
-
-    float* rawBufferL[] = { dataL.data(), zeros.data() };
-    SignalAdapterRaw signalLeftOnly(rawBufferL, 2, (int) dataL.size());
-    REQUIRE(check<SignalOnChannels>(signalLeftOnly, {1}));
-    REQUIRE_FALSE(check<SignalOnChannels>(signalLeftOnly, {2}));
-    REQUIRE_FALSE(check<SignalOnChannels>(signalLeftOnly, {2}, -40));
-    REQUIRE_FALSE(check<SignalOnChannels>(signalLeftOnly, {2}, -144));
+        std::vector<std::vector<float>> bufferL = { dataL, zeros };
+        SignalAdapterStdVecVec signalLeftOnly(bufferL);
+        REQUIRE(check<SignalOnAllChannels>(signalLeftOnly, {1}));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signalLeftOnly, {2}));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signalLeftOnly, {2}, -40));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signalLeftOnly, {2}, -144));
+    }
+    SECTION("Reduced signal on one channel") {
+        // scale dataR to -40dB
+        scale(buffer, {2}, Utils::dB2Linear(-40.f));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signal, {2}, -40.f));
+        REQUIRE_FALSE(check<SignalOnAllChannels>(signal, {1, 2}, -40.f)); // channel 1 has signal, but channel 2 hasn't ->false
+        REQUIRE(check<SignalOnAllChannels>(signal, {1}, -40.f));
+        REQUIRE(check<SignalOnAllChannels>(signal, {1, 2}, -50.f));
+        
+        // Test at the exact detection threshold, taking into account the signal's absmax value
+        float absmax = std::max(std::abs(*std::min_element(dataR.begin(), dataR.end())), *std::max_element(dataR.begin(), dataR.end()));
+        float pointWhereSignalIsDetected_dB = -40.f + Utils::linear2Db(absmax);
+        REQUIRE(check<SignalOnAllChannels>(signal, {2}, pointWhereSignalIsDetected_dB - 1e-5f)); // - 'tolerance'
+    }
+    
 }

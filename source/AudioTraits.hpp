@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 #include "ChannelSelection.hpp"
 #include "SignalAdapters.hpp"
 
@@ -34,23 +36,25 @@ static bool check(const ISignal& signal, const ChannelSelection& channelSelectio
 
 
 // MARK: - Audio Traits
-struct SignalOnChannels
+
+/**
+ * Evaluates if all of the selected channels have at least one sample above the threshold (absolute value)
+ */
+struct SignalOnAllChannels
 {
-    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float threshold_dB = -96.0)
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float threshold_dB = -96.f)
     {
-        float threshold_linear = Utils::dB2Linear(threshold_dB);
-        
-        for (int ch = 0; ch < signal.getNumChannels(); ++ch) {
-            int chNumber = ch + 1; // channels are 1-based
-            if (selectedChannels.find(chNumber) != selectedChannels.end()) {
-                for (int s = 0; s < signal.getNumSamples(); ++s) {
-                    if (signal.getData()[ch][s] > threshold_linear) {
-                        return true; // one sample above threshold is enough
-                    }
-                }
+        const float threshold_linear = Utils::dB2Linear(threshold_dB);
+        for (int chNumber : selectedChannels) {
+            auto channelSignal= signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
+            // find absolute max sample in channel signal
+            auto minmax = std::minmax_element(channelSignal.begin(), channelSignal.end());
+            float absmax = std::max(std::abs(*std::get<0>(minmax)), *std::get<1>(minmax));
+            if (absmax < threshold_linear) {
+                return false; // one channel without signal is enough to fail
             }
         }
-        return false;
+        return true;
     }
 };
 
