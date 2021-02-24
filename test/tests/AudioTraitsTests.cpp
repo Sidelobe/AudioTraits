@@ -119,9 +119,10 @@ TEST_CASE("AudioTraits::SignalOnAllChannels Tests")
         REQUIRE(check<SignalOnAllChannels>(signal, {1}, -40.f));
         REQUIRE(check<SignalOnAllChannels>(signal, {1, 2}, -50.f));
         
-        float absmax = std::max(abs(*std::min_element(dataR.begin(), dataR.end())), *std::max_element(dataR.begin(), dataR.end()));
+        // Test at the exact detection threshold, taking into account the signal's absmax value
+        float absmax = std::max(std::abs(*std::min_element(dataR.begin(), dataR.end())), *std::max_element(dataR.begin(), dataR.end()));
         float pointWhereSignalIsDetected_dB = -40.f + Utils::linear2Db(absmax);
-        REQUIRE(check<SignalOnAllChannels>(signal, {2}, pointWhereSignalIsDetected_dB - 1e-5f)); // - tolerance
+        REQUIRE(check<SignalOnAllChannels>(signal, {2}, pointWhereSignalIsDetected_dB - 1e-5f)); // - 'tolerance'
     }
     
 }
