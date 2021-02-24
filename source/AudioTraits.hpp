@@ -17,7 +17,7 @@ namespace AudioTraits {
 
 // MARK: - Infrastructure
 template<typename F, typename ... Is>
-static bool check(const ISignal& signal, const ChannelSelection& channelSelection, Is ... traitParams)
+static bool check(const ISignal& signal, const ChannelSelection& channelSelection, Is&& ... traitParams)
 {
     std::set<int> selectedChannels = channelSelection.get();
     ASSERT(selectedChannels.size() <= signal.getNumChannels());

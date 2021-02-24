@@ -42,7 +42,7 @@ public:
 class SignalAdapterRaw : public ISignal
 {
 public:
-    SignalAdapterRaw(const float* const* rawSignal, int numChannels, int numSamples) :
+    explicit SignalAdapterRaw(const float* const* rawSignal, int numChannels, int numSamples) :
         m_numChannels(numChannels),
         m_numSamples(numSamples),
         m_signal(rawSignal) {}
@@ -68,7 +68,7 @@ private:
 class SignalAdapterStdVecVec : public ISignal
 {
 public:
-    SignalAdapterStdVecVec(std::vector<std::vector<float>>& vector2D) :
+    explicit SignalAdapterStdVecVec(std::vector<std::vector<float>>& vector2D) :
         m_vector2D(vector2D),
         m_channelPointers(vector2D.size())
     {
