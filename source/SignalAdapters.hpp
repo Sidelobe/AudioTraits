@@ -72,7 +72,9 @@ public:
         m_vector2D(vector2D),
         m_channelPointers(vector2D.size())
     {
+        
         for (int i = 0; i < static_cast<int>(vector2D.size()); ++i) {
+            ASSERT(m_vector2D.at(i).size() == m_vector2D.at(0).size(), "All channels should be of equal length!");
             m_channelPointers[i] = m_vector2D[i].data();
         }
     }

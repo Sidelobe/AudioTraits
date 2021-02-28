@@ -46,7 +46,7 @@ struct SignalOnAllChannels
     {
         const float threshold_linear = Utils::dB2Linear(threshold_dB);
         for (int chNumber : selectedChannels) {
-            auto channelSignal= signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
+            auto channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
             // find absolute max sample in channel signal
             auto minmax = std::minmax_element(channelSignal.begin(), channelSignal.end());
             float absmax = std::max(std::abs(*std::get<0>(minmax)), *std::get<1>(minmax));
@@ -58,7 +58,44 @@ struct SignalOnAllChannels
     }
 };
 
+/**
+ * Evaluates if the signal represents a delayed version of the reference signal by a given amount of samples.
+ * Error tolerance can optionally be specified for both amplitude and time.
+ *
+ * @note: The longer the delay, the shorter signal left to do the comparison on. Therefore, the delay is limited to
+ * 80% of the signal length.
+ */
+struct IsDelayedVersionOf
+{
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const ISignal& referenceSignal,
+                     int delay_samples, float maxAmplitudeError_percent = 0.f, int maxTimeError_samples = 0)
+    {
+        ASSERT(delay_samples >= 0, "The delay must be positive");
+        ASSERT(maxAmplitudeError_percent >= 0 && maxAmplitudeError_percent <= 100.f, "The delay must be positive");
+        ASSERT(maxTimeError_samples >= 0 && maxTimeError_samples <= 5, "Time error has to be between 0 and 5 samples");
+        ASSERT((static_cast<float>(delay_samples)/signal.getNumSamples()) < .8f, "The delay cannot be longer than 80% of the signal");
+        ASSERT(referenceSignal.getNumSamples() >= signal.getNumSamples() - delay_samples, "The reference signal is not long enough");
 
+        auto amplitudeComp = [&](float a, float b) -> bool { return std::abs(a-b) <= maxAmplitudeError_percent/100; };
+        
+        for (int chNumber : selectedChannels) {
+            std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
+            std::vector<float> channelSignalRef = referenceSignal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
+
+            // TODO: max time error
+            std::vector<float> zeroPadding(delay_samples, 0);
+            std::vector<float> delayedRef(channelSignalRef);
+            delayedRef.insert(delayedRef.begin(), zeroPadding.begin(), zeroPadding.end());
+            delayedRef.resize(channelSignalRef.size());
+            
+            if (std::equal(delayedRef.begin(), delayedRef.end(), channelSignal.begin(), amplitudeComp) == false) {
+                return false; // one channel mismatched is enough to fail
+            }
+        }
+        return true;
+    }
+  
+};
 
 } // namespace AudioTraits
 } // namespace slb

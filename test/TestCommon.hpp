@@ -60,6 +60,16 @@ static inline std::vector<int> createRandomVectorInt(int length, int seed=0)
     return result;
 }
 
+template<typename T>
+static std::vector<T> createDirac(int lengthSamples)
+{
+    std::vector<T> result(lengthSamples);
+    result[0] = 1.0;
+    std::fill(result.begin()+1, result.end(), 0.0);
+    return result;
+}
+
+
 static inline std::string resolveTestFile(const std::string& path)
 {
     // If source directory was defined during compilation use that instead of current working directory

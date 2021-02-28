@@ -126,3 +126,45 @@ TEST_CASE("AudioTraits::SignalOnAllChannels Tests")
     }
     
 }
+
+TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
+{
+    std::vector<float> dirac = createDirac<float>(64);
+    std::vector<float> diracDelayed8 = createDirac<float>(64-8);
+    std::vector<float> zeros(8, 0);
+    diracDelayed8.insert(diracDelayed8.begin(), zeros.begin(), zeros.end());
+    REQUIRE(diracDelayed8.size() == 64);
+
+    std::vector<std::vector<float>> reference = { dirac, dirac };
+    SignalAdapterStdVecVec referenceSignal(reference);
+    std::vector<std::vector<float>> buffer = { dirac, diracDelayed8 };
+    SignalAdapterStdVecVec signal(buffer);
+    
+    SECTION("check signal lengths") {
+        dirac.resize(dirac.size()-1);
+        std::vector<std::vector<float>> bufferTooShort = { dirac, dirac };
+        SignalAdapterStdVecVec bufferTooShortSignal(bufferTooShort);
+        REQUIRE_NOTHROW(check<IsDelayedVersionOf>(bufferTooShortSignal, {1}, signal, 0)); // buffer can be shorter than reference
+        REQUIRE_THROWS(check<IsDelayedVersionOf>(signal, {1}, bufferTooShortSignal, 0)); // reference is too short
+        REQUIRE_NOTHROW(check<IsDelayedVersionOf>(signal, {1}, bufferTooShortSignal, 1)); // delay of 1 -> reference is long enough now
+    }
+    
+    SECTION("check for both channels") {
+        REQUIRE(check<IsDelayedVersionOf>(signal, {1}, referenceSignal, 0));
+        REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, 8));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {1}, referenceSignal, 1));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, 7));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, 9));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {1, 2}, referenceSignal, 0));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {1, 2}, referenceSignal, 8));
+        
+        std::vector<std::vector<float>> bothDelayed = { diracDelayed8, diracDelayed8 };
+        SignalAdapterStdVecVec signalBothDelayed(bothDelayed);
+        REQUIRE(check<IsDelayedVersionOf>(signalBothDelayed, {1, 2}, referenceSignal, 8));
+        REQUIRE(check<IsDelayedVersionOf>(signalBothDelayed, {1}, referenceSignal, 8));
+        REQUIRE(check<IsDelayedVersionOf>(signalBothDelayed, {2}, referenceSignal, 8));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayed, {1, 2}, referenceSignal, 7));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayed, {1, 2}, referenceSignal, 9));
+    }
+    
+}
