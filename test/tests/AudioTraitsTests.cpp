@@ -94,8 +94,8 @@ void scale(std::vector<std::vector<float>>& input, ChannelSelection channelSelec
 
 TEST_CASE("AudioTraits::SignalOnAllChannels Tests")
 {
-    std::vector<float> dataL = createRandomVector(16, 333);
-    std::vector<float> dataR = createRandomVector(16, 666);
+    std::vector<float> dataL = createRandomVector(16, 333 /*seed*/);
+    std::vector<float> dataR = createRandomVector(16, 666 /*seed*/);
     std::vector<float> zeros(16, 0);
     std::vector<std::vector<float>> buffer = { dataL, dataR };
     SignalAdapterStdVecVec signal(buffer);
@@ -129,15 +129,16 @@ TEST_CASE("AudioTraits::SignalOnAllChannels Tests")
 
 TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
 {
+    int delay = GENERATE(1, 8, 31);
     std::vector<float> dirac = createDirac<float>(64);
-    std::vector<float> diracDelayed8 = createDirac<float>(64-8);
-    std::vector<float> zeros(8, 0);
-    diracDelayed8.insert(diracDelayed8.begin(), zeros.begin(), zeros.end());
-    REQUIRE(diracDelayed8.size() == 64);
+    std::vector<float> zeros(delay, 0);
+    std::vector<float> diracDelayed = createDirac<float>(64-delay);
+    diracDelayed.insert(diracDelayed.begin(), zeros.begin(), zeros.end());
+    REQUIRE(diracDelayed.size() == 64);
 
     std::vector<std::vector<float>> reference = { dirac, dirac };
     SignalAdapterStdVecVec referenceSignal(reference);
-    std::vector<std::vector<float>> buffer = { dirac, diracDelayed8 };
+    std::vector<std::vector<float>> buffer = { dirac, diracDelayed };
     SignalAdapterStdVecVec signal(buffer);
     
     SECTION("check signal lengths") {
@@ -151,20 +152,53 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
     
     SECTION("check for both channels") {
         REQUIRE(check<IsDelayedVersionOf>(signal, {1}, referenceSignal, 0));
-        REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, 8));
+        REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay));
         REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {1}, referenceSignal, 1));
-        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, 7));
-        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, 9));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay-1));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay+1));
         REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {1, 2}, referenceSignal, 0));
-        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {1, 2}, referenceSignal, 8));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {1, 2}, referenceSignal, delay));
         
-        std::vector<std::vector<float>> bothDelayed = { diracDelayed8, diracDelayed8 };
+        std::vector<std::vector<float>> bothDelayed = { diracDelayed, diracDelayed };
         SignalAdapterStdVecVec signalBothDelayed(bothDelayed);
-        REQUIRE(check<IsDelayedVersionOf>(signalBothDelayed, {1, 2}, referenceSignal, 8));
-        REQUIRE(check<IsDelayedVersionOf>(signalBothDelayed, {1}, referenceSignal, 8));
-        REQUIRE(check<IsDelayedVersionOf>(signalBothDelayed, {2}, referenceSignal, 8));
-        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayed, {1, 2}, referenceSignal, 7));
-        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayed, {1, 2}, referenceSignal, 9));
+        REQUIRE(check<IsDelayedVersionOf>(signalBothDelayed, {1, 2}, referenceSignal, delay));
+        REQUIRE(check<IsDelayedVersionOf>(signalBothDelayed, {1}, referenceSignal, delay));
+        REQUIRE(check<IsDelayedVersionOf>(signalBothDelayed, {2}, referenceSignal, delay));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayed, {1, 2}, referenceSignal, delay-1));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayed, {1, 2}, referenceSignal, delay+1));
     }
     
+    SECTION("check with more complex signals") {
+        std::vector<float> randomData1 = createRandomVector(64, 111 /*seed*/);
+        std::vector<float> randomData2 = createRandomVector(64, 112 /*seed*/);
+        std::vector<float> randomData3 = createRandomVector(64, 113 /*seed*/);
+
+        std::vector<std::vector<float>> randomData { randomData1, randomData2, randomData3 };
+        SignalAdapterStdVecVec randomSignal(randomData);
+        
+        SECTION("Delay all channels") {
+            std::vector<std::vector<float>> randomDataDelayed = randomData;
+            for (auto& data : randomDataDelayed) {
+                data.insert(data.begin(), zeros.begin(), zeros.end());
+                data.resize(randomData1.size());
+            }
+            SignalAdapterStdVecVec randomSignalDelayed(randomDataDelayed);
+            REQUIRE(check<IsDelayedVersionOf>(randomSignalDelayed, {}, randomSignal, delay));
+            REQUIRE(check<IsDelayedVersionOf>(randomSignalDelayed, {1, 2}, randomSignal, delay));
+            REQUIRE(check<IsDelayedVersionOf>(randomSignalDelayed, {1}, randomSignal, delay));
+            REQUIRE(check<IsDelayedVersionOf>(randomSignalDelayed, {3}, randomSignal, delay));
+        }
+        SECTION("Delay only first channel") {
+            std::vector<std::vector<float>> randomDataDelayed = randomData;
+            randomDataDelayed[0].insert(randomDataDelayed[0].begin(), zeros.begin(), zeros.end());
+            randomDataDelayed[0].resize(randomData1.size());
+            
+            SignalAdapterStdVecVec randomSignalDelayed(randomDataDelayed);
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(randomSignalDelayed, {}, randomSignal, delay));
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(randomSignalDelayed, {1, 2}, randomSignal, delay));
+            REQUIRE(check<IsDelayedVersionOf>(randomSignalDelayed, {1}, randomSignal, delay));
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(randomSignalDelayed, {3}, randomSignal, delay));
+        }
+    }
+ 
 }
