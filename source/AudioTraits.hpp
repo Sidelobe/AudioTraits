@@ -76,7 +76,10 @@ struct IsDelayedVersionOf
         ASSERT((static_cast<float>(delay_samples)/signal.getNumSamples()) < .8f, "The delay cannot be longer than 80% of the signal");
         ASSERT(referenceSignal.getNumSamples() >= signal.getNumSamples() - delay_samples, "The reference signal is not long enough");
 
-        auto amplitudeComp = [&](float a, float b) -> bool { return std::abs(a-b) <= maxAmplitudeError_percent/100; };
+        auto amplitudeComp = [&](float a, float b) -> bool
+        {
+            return std::abs(a-b) <= 0.01f * maxAmplitudeError_percent;
+        };
         
         for (int chNumber : selectedChannels) {
             std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
