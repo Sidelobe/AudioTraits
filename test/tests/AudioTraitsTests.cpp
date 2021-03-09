@@ -222,4 +222,25 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
         }
     }
     
+    SECTION("Time Error") {
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {1}, referenceSignal, delay, 0.f, 0));
+        REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay, 0.f, 0));
+
+        REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay,     0.f, 1));
+        REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay + 1, 0.f, 1));
+        REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay - 1, 0.f, 1));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay + 1, 0.f, 0));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay - 1, 0.f, 0));
+        
+        // delay
+        if (delay > 4 && delay < 50) {
+            REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay + 5, 0.f, 5));
+            REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay - 5, 0.f, 5));
+            REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay + 4, 0.f, 5));
+            REQUIRE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay - 4, 0.f, 5));
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay + 6, 0.f, 5));
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {2}, referenceSignal, delay - 6, 0.f, 5));
+        }
+    }
+    
 }

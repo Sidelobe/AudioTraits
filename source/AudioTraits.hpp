@@ -78,21 +78,49 @@ struct IsDelayedVersionOf
 
         auto amplitudeComp = [&](float a, float b) -> bool
         {
-            return std::abs(a-b) <= 0.01f * maxAmplitudeError_percent;
+            return std::abs(a-b) <= 1e-2f * maxAmplitudeError_percent;
         };
         
         for (int chNumber : selectedChannels) {
             std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
             std::vector<float> channelSignalRef = referenceSignal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
 
-            // TODO: max time error
-            std::vector<float> zeroPadding(delay_samples, 0);
-            std::vector<float> delayedRef(channelSignalRef);
-            delayedRef.insert(delayedRef.begin(), zeroPadding.begin(), zeroPadding.end());
-            delayedRef.resize(channelSignalRef.size());
+            // Exact delays vs. approximate delay [Duplication for better readability]
+            if (maxTimeError_samples == 0) {
+                std::vector<float> zeroPadding(delay_samples, 0);
+                std::vector<float> delayedRef(channelSignalRef); // make a copy and delay it
+                delayedRef.insert(delayedRef.begin(), zeroPadding.begin(), zeroPadding.end());
+                delayedRef.resize(channelSignalRef.size());
+                
+                if (std::equal(delayedRef.begin(), delayedRef.end(), channelSignal.begin(), amplitudeComp) == false) {
+                    return false; // one channel mismatched is enough to fail
+                }
+            } else {
+                bool thisChannelPassed = false;
+                const int& error = maxTimeError_samples;
+                
+                for (int jitteredDelay = delay_samples-error; jitteredDelay <= delay_samples+error; ++jitteredDelay) {
+                    std::vector<float> zeroPadding(std::abs(jitteredDelay), 0);
+                    std::vector<float> delayedRef;
+                    if (jitteredDelay >= 0) {
+                        delayedRef = channelSignalRef;
+                    } else {
+                        // negative delay: we delay the signal instead of the reference
+                        delayedRef = channelSignal;
+                    }
+                    // delay the copy
+                    delayedRef.insert(delayedRef.begin(), zeroPadding.begin(), zeroPadding.end());
+                    delayedRef.resize(channelSignalRef.size());
+                    
+                    if (std::equal(delayedRef.begin(), delayedRef.end(), channelSignal.begin(), amplitudeComp)) {
+                        thisChannelPassed = true;
+                        break;
+                    }
+                }
             
-            if (std::equal(delayedRef.begin(), delayedRef.end(), channelSignal.begin(), amplitudeComp) == false) {
-                return false; // one channel mismatched is enough to fail
+                if (!thisChannelPassed) {
+                    return false; // none of the 'jittered' delay times was a match
+                }
             }
         }
         return true;
