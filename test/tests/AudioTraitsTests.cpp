@@ -243,4 +243,20 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
         }
     }
     
+    SECTION("Amplitude & Time Error") {
+        std::vector<std::vector<float>> delayedAndScaled = { diracDelayed, diracDelayed };
+        scale(delayedAndScaled, {1, 2}, 0.8f);
+        SignalAdapterStdVecVec signalScaled(delayedAndScaled);
+        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 20.f, 0));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 10.f)); // fails because of amplitude tolerance
+        if (delay > 4 && delay < 50) {
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay +2, 20.f, 1)); // fails because of delay tolerance
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay -2, 20.f, 1)); // fails because of delay tolerance
+        }
+        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay + 1, 20.f, 1));
+        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay - 1, 20.f, 1));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay + 1, 10.f, 1)); // fails because of both
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay - 1, 10.f, 1)); // fails because of both
+    }
+    
 }
