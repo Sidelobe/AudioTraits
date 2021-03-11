@@ -205,20 +205,20 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
     SECTION("Amplitude error") {
         std::vector<std::vector<float>> delayedAndScaled = { diracDelayed, diracDelayed };
         SECTION("Scale both channels") {
-            scale(delayedAndScaled, {1, 2}, 0.8f);
+            scale(delayedAndScaled, {1, 2}, Utils::dB2Linear(-1.f));
             SignalAdapterStdVecVec signalScaled(delayedAndScaled);
             REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay)); // won't pass with default
-            REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 20.f));       // max_amp_error = 20%
-            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 10.f)); // max_amp_error = 10%
+            REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 1.f));        // amplitude tolerance 1dB
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 0.5f)); // amplitude tolerance 0.5dB
         }
         SECTION("Scale one channel only") {
-            scale(delayedAndScaled, {2}, 0.8f);
+            scale(delayedAndScaled, {2}, Utils::dB2Linear(-1.f));
             SignalAdapterStdVecVec signalBothDelayedRightScaled(delayedAndScaled);
             REQUIRE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {1}, referenceSignal, delay));
             REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {2}, referenceSignal, delay)); // won't pass with default
             REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {1, 2}, referenceSignal, delay)); // won't pass with default
-            REQUIRE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {}, referenceSignal, delay, 20.f));       // max_amp_error = 20%
-            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {}, referenceSignal, delay, 10.f)); // max_amp_error = 10%
+            REQUIRE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {}, referenceSignal, delay, 1.f));       // amplitude tolerance 1dB
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {}, referenceSignal, delay, 0.5f)); // amplitude tolerance 0.5dB
         }
     }
     
@@ -245,18 +245,19 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
     
     SECTION("Amplitude & Time Error") {
         std::vector<std::vector<float>> delayedAndScaled = { diracDelayed, diracDelayed };
-        scale(delayedAndScaled, {1, 2}, 0.8f);
+        scale(delayedAndScaled, {1, 2}, Utils::dB2Linear(-1.f));
         SignalAdapterStdVecVec signalScaled(delayedAndScaled);
-        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 20.f, 0));
-        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 10.f)); // fails because of amplitude tolerance
+        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 1.f, 0));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 0.5f)); // fails because of amplitude tolerance
         if (delay > 4 && delay < 50) {
-            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay +2, 20.f, 1)); // fails because of delay tolerance
-            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay -2, 20.f, 1)); // fails because of delay tolerance
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay +2, 1.f, 1)); // fails because of delay tolerance
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay -2, 1.f, 1)); // fails because of delay tolerance
         }
-        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay + 1, 20.f, 1));
-        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay - 1, 20.f, 1));
-        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay + 1, 10.f, 1)); // fails because of both
-        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay - 1, 10.f, 1)); // fails because of both
+        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay + 1, 1.f, 1));
+        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay - 1, 1.f, 1));
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay + 1, .5f, 1)); // fails because of both
+        REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay - 1, .5f, 1)); // fails because of both
     }
     
 }
+

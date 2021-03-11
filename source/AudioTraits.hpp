@@ -60,25 +60,28 @@ struct SignalOnAllChannels
 
 /**
  * Evaluates if the signal represents a delayed version of the reference signal by a given amount of samples.
- * Error tolerance can optionally be specified for both amplitude and time.
  *
- * @note: The longer the delay, the shorter signal left to do the comparison on. Therefore, the delay is limited to
- * 80% of the signal length.
+ * Optionally, error tolerance can be specified for both amplitude (in dB [power]) and time (in samples).
+ *
+ * @note: The longer the delay, the shorter signal left to do the comparison on. Therefore, the delay time is limited
+ * to a maximum of 80% of the total signal length.
  */
 struct IsDelayedVersionOf
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const ISignal& referenceSignal,
-                     int delay_samples, float maxAmplitudeError_percent = 0.f, int maxTimeError_samples = 0)
+                     int delay_samples, float amplitudeTolerance_dB = 0.f, int timeTolerance_samples = 0)
     {
         ASSERT(delay_samples >= 0, "The delay must be positive");
-        ASSERT(maxAmplitudeError_percent >= 0 && maxAmplitudeError_percent <= 100.f, "The delay must be positive");
-        ASSERT(maxTimeError_samples >= 0 && maxTimeError_samples <= 5, "Time error has to be between 0 and 5 samples");
+        ASSERT(amplitudeTolerance_dB >= 0 && amplitudeTolerance_dB < 96.f, "Invalid amplitude tolerance");
+        ASSERT(timeTolerance_samples >= 0 && timeTolerance_samples <= 5, "Time tolerance has to be between 0 and 5 samples");
         ASSERT((static_cast<float>(delay_samples)/signal.getNumSamples()) < .8f, "The delay cannot be longer than 80% of the signal");
         ASSERT(referenceSignal.getNumSamples() >= signal.getNumSamples() - delay_samples, "The reference signal is not long enough");
 
-        auto amplitudeComp = [&](float a, float b)
+        float amplitudeTolerance = 1.f - Utils::dB2Linear(-amplitudeTolerance_dB);
+        /** returns true if a >= b (taking into account tolerance) */
+        auto amplitudeComparison = [&](float a, float b)
         {
-            return std::abs(a-b) <= 1e-2f * maxAmplitudeError_percent;
+            return std::abs(a-b) <= amplitudeTolerance;
         };
         
         for (int chNumber : selectedChannels) {
@@ -89,7 +92,7 @@ struct IsDelayedVersionOf
             
             // Allow for some tolerance on the delay time: ±maxTimeError_samples
             // Try to match signal with all delay values in this range
-            const int& error = maxTimeError_samples;
+            const int& error = timeTolerance_samples;
             for (int jitteredDelay = delay_samples - error; jitteredDelay <= delay_samples + error; ++jitteredDelay) {
                 std::vector<float> delayedRef;
                 if (jitteredDelay < 0) {
@@ -103,7 +106,7 @@ struct IsDelayedVersionOf
                 delayedRef.insert(delayedRef.begin(), zeroPadding.begin(), zeroPadding.end());
                 delayedRef.resize(channelSignalRef.size());
                 
-                if (std::equal(delayedRef.begin(), delayedRef.end(), channelSignal.begin(), amplitudeComp)) {
+                if (std::equal(delayedRef.begin(), delayedRef.end(), channelSignal.begin(), amplitudeComparison)) {
                     thisChannelPassed = true; // We found a match for this channel
                     break;
                 }
