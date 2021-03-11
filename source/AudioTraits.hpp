@@ -34,6 +34,16 @@ static bool check(const ISignal& signal, const ChannelSelection& channelSelectio
     return F::eval(signal, selectedChannels, std::forward<decltype(traitParams)>(traitParams)...);
 }
 
+/** @returns true if a >= b (taking into account tolerance [dB]) */
+bool areVectorsEqual(const std::vector<float>& a, const std::vector<float>& b, float tolerance_dB)
+{
+    return std::equal(a.begin(), a.end(), b.begin(), [&tolerance_dB](float a, float b)
+    {
+        float error = std::abs(Utils::linear2Db(std::abs(a)) - Utils::linear2Db(std::abs(b)));
+        return error <= tolerance_dB;
+    });
+};
+
 
 // MARK: - Audio Traits
 
@@ -77,13 +87,6 @@ struct IsDelayedVersionOf
         ASSERT((static_cast<float>(delay_samples)/signal.getNumSamples()) < .8f, "The delay cannot be longer than 80% of the signal");
         ASSERT(referenceSignal.getNumSamples() >= signal.getNumSamples() - delay_samples, "The reference signal is not long enough");
 
-        /** returns true if a >= b (taking into account tolerance) */
-        auto amplitudeComparison = [&](float a, float b)
-        {
-            float error = std::abs(Utils::linear2Db(std::abs(a)) - Utils::linear2Db(std::abs(b)));
-            return error <= amplitudeTolerance_dB;
-        };
-        
         for (int chNumber : selectedChannels) {
             std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
             std::vector<float> channelSignalRef = referenceSignal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
@@ -106,7 +109,7 @@ struct IsDelayedVersionOf
                 delayedRef.insert(delayedRef.begin(), zeroPadding.begin(), zeroPadding.end());
                 delayedRef.resize(channelSignalRef.size());
                 
-                if (std::equal(channelSignal.begin(), channelSignal.end(), delayedRef.begin(), amplitudeComparison)) {
+                if (areVectorsEqual(channelSignal, delayedRef, amplitudeTolerance_dB)) {
                     thisChannelPassed = true; // We found a match for this channel
                     break;
                 }
@@ -132,13 +135,6 @@ struct HasIdenticalChannels
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float tolerance_dB = 0.f)
     {
         ASSERT(tolerance_dB >= 0 && tolerance_dB < 96.f, "Invalid amplitude tolerance");
-
-        /** returns true if a >= b (taking into account tolerance) */
-        auto amplitudeComparison = [&](float a, float b)
-        {
-            float error = std::abs(Utils::linear2Db(std::abs(a)) - Utils::linear2Db(std::abs(b)));
-            return error <= tolerance_dB;
-        };
         
         bool doAllChannelsMatch = true;
         std::vector<float> reference(0); // init with size 0
@@ -148,7 +144,7 @@ struct HasIdenticalChannels
                 reference = channelSignal; // Take first channel as reference
                 continue; // no comparison with itself
             }
-            doAllChannelsMatch = std::equal(channelSignal.begin(), channelSignal.end(), reference.begin(), amplitudeComparison);
+            doAllChannelsMatch = areVectorsEqual(channelSignal, reference, tolerance_dB);
         }
         
         return doAllChannelsMatch;
