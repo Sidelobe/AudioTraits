@@ -298,3 +298,40 @@ TEST_CASE("AudioTraits::HasIdenticalChannels Tests")
     REQUIRE(check<HasIdenticalChannels>(signal, {4, 6}, 3.001f));
     REQUIRE_FALSE(check<HasIdenticalChannels>(signal, {4, 6}, 2.999f));
 }
+
+TEST_CASE("AudioTraits::HaveIdenticalChannels Tests")
+{
+    std::vector<float> data1A = createRandomVector(16, 333 /*seed*/);
+    std::vector<float> data2A = createRandomVector(16, 666 /*seed*/);
+    std::vector<float> data1B = createRandomVector(16, 333 /*seed*/);
+    std::vector<float> data2B = createRandomVector(16, 666 /*seed*/);
+    std::vector<float> zeros(16, 0);
+    std::vector<std::vector<float>> bufferA = { data1A, data1A, zeros, data2A, zeros, data2A };
+    std::vector<std::vector<float>> bufferB = { data1B, data2B, data1B, data2B, zeros, data2B };
+    SignalAdapterStdVecVec signalA(bufferA);
+    SignalAdapterStdVecVec signalB(bufferB);
+
+    REQUIRE(check<HaveIdenticalChannels>(signalA, {}, signalA)); // comparison with itself always true
+    REQUIRE(check<HaveIdenticalChannels>(signalA, {1}, signalA));
+    REQUIRE(check<HaveIdenticalChannels>(signalB, {5}, signalB));
+    
+    REQUIRE(check<HaveIdenticalChannels>(signalA, {1}, signalB));
+    REQUIRE(check<HaveIdenticalChannels>(signalA, {4}, signalB)); // comparison with zero always true
+    REQUIRE_FALSE(check<HaveIdenticalChannels>(signalA, {}, signalB)); // fail for all channels
+    REQUIRE_FALSE(check<HaveIdenticalChannels>(signalA, {1, 2}, signalB));
+    REQUIRE(check<HaveIdenticalChannels>(signalA, {1, 4, 5, 6}, signalB));
+    REQUIRE(check<HaveIdenticalChannels>(signalA, {{4, 6}}, signalB));
+    REQUIRE(check<HaveIdenticalChannels>(signalA, {1, 4}, signalB));
+    REQUIRE_FALSE(check<HaveIdenticalChannels>(signalA, {1, 2, 4, 5}, signalB));
+
+    scale(bufferA, {1, 4, 5}, Utils::dB2Linear(-1.f));
+    REQUIRE_FALSE(check<HaveIdenticalChannels>(signalA, {1, 4, 5}, signalB));
+    REQUIRE(check<HaveIdenticalChannels>(signalA, {1, 4, 5}, signalB, 1.001f));
+    REQUIRE_FALSE(check<HaveIdenticalChannels>(signalA, {1, 4, 5}, signalB, 0.999f));
+
+    scale(bufferA, {6}, Utils::dB2Linear(-1.f));
+    scale(bufferB, {1, {4, 6}}, Utils::dB2Linear(-4.f));
+    REQUIRE_FALSE(check<HaveIdenticalChannels>(signalA, {1, {4, 6}}, signalB));
+    REQUIRE(check<HaveIdenticalChannels>(signalA, {1, {4, 6}}, signalB, 3.001f));
+    REQUIRE_FALSE(check<HaveIdenticalChannels>(signalA, {1, {4, 6}}, signalB, 2.999f));
+}

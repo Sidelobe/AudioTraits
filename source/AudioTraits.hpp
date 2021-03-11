@@ -152,5 +152,30 @@ struct HasIdenticalChannels
   
 };
 
+/**
+ * Evaluates if two signals have matching channels for the entire supplied selection. The matchiing is done on a
+ * sample-by-sample basis.
+ *
+ * Optionally, error tolerance for the matching can be specified in dB
+ *
+ */
+struct HaveIdenticalChannels
+{
+    static bool eval(const ISignal& signalA, const std::set<int>& selectedChannels, const ISignal& signalB, float tolerance_dB = 0.f)
+    {
+        ASSERT(tolerance_dB >= 0 && tolerance_dB < 96.f, "Invalid amplitude tolerance");
+        
+        for (int chNumber : selectedChannels) {
+            std::vector<float> channelSignalA = signalA.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
+            std::vector<float> channelSignalB = signalB.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
+            if (!areVectorsEqual(channelSignalA, channelSignalB, tolerance_dB)) {
+                return false; // one channel without a match is enough to fail
+            }
+        }
+        return true;
+    }
+  
+};
+
 } // namespace AudioTraits
 } // namespace slb
