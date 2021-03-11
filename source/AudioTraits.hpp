@@ -77,11 +77,11 @@ struct IsDelayedVersionOf
         ASSERT((static_cast<float>(delay_samples)/signal.getNumSamples()) < .8f, "The delay cannot be longer than 80% of the signal");
         ASSERT(referenceSignal.getNumSamples() >= signal.getNumSamples() - delay_samples, "The reference signal is not long enough");
 
-        float amplitudeTolerance = 1.f - Utils::dB2Linear(-amplitudeTolerance_dB);
         /** returns true if a >= b (taking into account tolerance) */
         auto amplitudeComparison = [&](float a, float b)
         {
-            return std::abs(a-b) <= amplitudeTolerance;
+            float error = std::abs(Utils::linear2Db(std::abs(a)) - Utils::linear2Db(std::abs(b)));
+            return error <= amplitudeTolerance_dB;
         };
         
         for (int chNumber : selectedChannels) {
@@ -106,7 +106,7 @@ struct IsDelayedVersionOf
                 delayedRef.insert(delayedRef.begin(), zeroPadding.begin(), zeroPadding.end());
                 delayedRef.resize(channelSignalRef.size());
                 
-                if (std::equal(delayedRef.begin(), delayedRef.end(), channelSignal.begin(), amplitudeComparison)) {
+                if (std::equal(channelSignal.begin(), channelSignal.end(), delayedRef.begin(), amplitudeComparison)) {
                     thisChannelPassed = true; // We found a match for this channel
                     break;
                 }
@@ -116,6 +116,42 @@ struct IsDelayedVersionOf
             }
         }
         return true;
+    }
+  
+};
+
+/**
+ * Evaluates if the signal has matching channels for the entire supplied selection. The matchiing is done on a
+ * sample-by-sample basis.
+ *
+ * Optionally, error tolerance for the matching can be specified in dB
+ *
+ */
+struct HasIdenticalChannels
+{
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float tolerance_dB = 0.f)
+    {
+        ASSERT(tolerance_dB >= 0 && tolerance_dB < 96.f, "Invalid amplitude tolerance");
+
+        /** returns true if a >= b (taking into account tolerance) */
+        auto amplitudeComparison = [&](float a, float b)
+        {
+            float error = std::abs(Utils::linear2Db(std::abs(a)) - Utils::linear2Db(std::abs(b)));
+            return error <= tolerance_dB;
+        };
+        
+        bool doAllChannelsMatch = true;
+        std::vector<float> reference(0); // init with size 0
+        for (int chNumber : selectedChannels) {
+            std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
+            if (reference.empty()) {
+                reference = channelSignal; // Take first channel as reference
+                continue; // no comparison with itself
+            }
+            doAllChannelsMatch = std::equal(channelSignal.begin(), channelSignal.end(), reference.begin(), amplitudeComparison);
+        }
+        
+        return doAllChannelsMatch;
     }
   
 };

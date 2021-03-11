@@ -208,8 +208,17 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
             scale(delayedAndScaled, {1, 2}, Utils::dB2Linear(-1.f));
             SignalAdapterStdVecVec signalScaled(delayedAndScaled);
             REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay)); // won't pass with default
-            REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 1.f));        // amplitude tolerance 1dB
-            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 0.5f)); // amplitude tolerance 0.5dB
+            REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 1.001f));        // amplitude tolerance 1dB
+            REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 3.001f));        // amplitude tolerance 3dB
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 0.9999f)); // amplitude tolerance below 1dB
+            
+            scale(delayedAndScaled, {1, 2}, Utils::dB2Linear(-2.f));
+            SignalAdapterStdVecVec signalScaledMore(delayedAndScaled);
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaledMore, {}, referenceSignal, delay)); // won't pass with default
+            REQUIRE(check<IsDelayedVersionOf>(signalScaledMore, {}, referenceSignal, delay, 3.001f));        // amplitude tolerance 1dB
+            REQUIRE(check<IsDelayedVersionOf>(signalScaledMore, {}, referenceSignal, delay, 4.001f));        // amplitude tolerance 3dB
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaledMore, {}, referenceSignal, delay, 2.999f)); // amplitude tolerance below 1dB
+            
         }
         SECTION("Scale one channel only") {
             scale(delayedAndScaled, {2}, Utils::dB2Linear(-1.f));
@@ -217,7 +226,7 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
             REQUIRE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {1}, referenceSignal, delay));
             REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {2}, referenceSignal, delay)); // won't pass with default
             REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {1, 2}, referenceSignal, delay)); // won't pass with default
-            REQUIRE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {}, referenceSignal, delay, 1.f));       // amplitude tolerance 1dB
+            REQUIRE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {}, referenceSignal, delay, 1.001f));       // amplitude tolerance 1dB
             REQUIRE_FALSE(check<IsDelayedVersionOf>(signalBothDelayedRightScaled, {}, referenceSignal, delay, 0.5f)); // amplitude tolerance 0.5dB
         }
     }
@@ -247,17 +256,45 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
         std::vector<std::vector<float>> delayedAndScaled = { diracDelayed, diracDelayed };
         scale(delayedAndScaled, {1, 2}, Utils::dB2Linear(-1.f));
         SignalAdapterStdVecVec signalScaled(delayedAndScaled);
-        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 1.f, 0));
+        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 1.001f, 0));
         REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay, 0.5f)); // fails because of amplitude tolerance
         if (delay > 4 && delay < 50) {
-            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay +2, 1.f, 1)); // fails because of delay tolerance
-            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay -2, 1.f, 1)); // fails because of delay tolerance
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay +2, 1.001f, 1)); // fails because of delay tolerance
+            REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay -2, 1.001f, 1)); // fails because of delay tolerance
         }
-        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay + 1, 1.f, 1));
-        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay - 1, 1.f, 1));
+        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay + 1, 1.001f, 1));
+        REQUIRE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay - 1, 1.001f, 1));
         REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay + 1, .5f, 1)); // fails because of both
         REQUIRE_FALSE(check<IsDelayedVersionOf>(signalScaled, {}, referenceSignal, delay - 1, .5f, 1)); // fails because of both
     }
     
 }
 
+TEST_CASE("AudioTraits::HasIdenticalChannels Tests")
+{
+    std::vector<float> data1 = createRandomVector(16, 333 /*seed*/);
+    std::vector<float> data2 = createRandomVector(16, 666 /*seed*/);
+    std::vector<float> zeros(16, 0);
+    std::vector<std::vector<float>> buffer = { data1, data1, zeros, data2, zeros, data2 };
+    SignalAdapterStdVecVec signal(buffer);
+    
+    REQUIRE(check<HasIdenticalChannels>(signal, {1})); // one channels channel always matches itself
+    REQUIRE(check<HasIdenticalChannels>(signal, {3})); // one channels channel always matches itself
+    REQUIRE(check<HasIdenticalChannels>(signal, {4})); // one channels channel always matches itself
+    REQUIRE_FALSE(check<HasIdenticalChannels>(signal, {})); // all channels
+    REQUIRE(check<HasIdenticalChannels>(signal, {1, 2}));
+    REQUIRE(check<HasIdenticalChannels>(signal, {4, 6}));
+    REQUIRE_FALSE(check<HasIdenticalChannels>(signal, {1, 4}));
+    REQUIRE_FALSE(check<HasIdenticalChannels>(signal, {1, 3}));
+    
+    scale(buffer, {1}, Utils::dB2Linear(-1.f));
+    REQUIRE_FALSE(check<HasIdenticalChannels>(signal, {1, 2}));
+    REQUIRE(check<HasIdenticalChannels>(signal, {1, 2}, 1.001f));
+    REQUIRE_FALSE(check<HasIdenticalChannels>(signal, {1, 2}, 0.999f));
+    
+    scale(buffer, {4}, Utils::dB2Linear(-1.f));
+    scale(buffer, {6}, Utils::dB2Linear(-4.f));
+    REQUIRE_FALSE(check<HasIdenticalChannels>(signal, {4, 6}));
+    REQUIRE(check<HasIdenticalChannels>(signal, {4, 6}, 3.001f));
+    REQUIRE_FALSE(check<HasIdenticalChannels>(signal, {4, 6}, 2.999f));
+}
