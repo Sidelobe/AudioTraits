@@ -67,7 +67,11 @@ static inline float dB2Linear(float value_dB)
 
 static inline float linear2Db(float value_linear)
 {
-    return 20.f * log10f(value_linear);
+    // avoid log(0)
+    if (value_linear > 0.f) {
+        return 20.f * log10f(value_linear);
+    }
+    return std::numeric_limits<float>::lowest();
 }
 
 } // namespace Utils
