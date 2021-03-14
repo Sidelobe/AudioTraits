@@ -37,6 +37,7 @@ static bool check(const ISignal& signal, const ChannelSelection& channelSelectio
 /** @returns true if a >= b (taking into account tolerance [dB]) */
 bool areVectorsEqual(const std::vector<float>& a, const std::vector<float>& b, float tolerance_dB)
 {
+    ASSERT(a.size() == b.size(), "Vectors must be of equal length for comparison");
     return std::equal(a.begin(), a.end(), b.begin(), [&tolerance_dB](float a, float b)
     {
         float error = std::abs(Utils::linear2Db(std::abs(a)) - Utils::linear2Db(std::abs(b)));
@@ -107,7 +108,7 @@ struct IsDelayedVersionOf
                 // delay the copy we made
                 std::vector<float> zeroPadding(std::abs(jitteredDelay), 0);
                 delayedRef.insert(delayedRef.begin(), zeroPadding.begin(), zeroPadding.end());
-                delayedRef.resize(channelSignalRef.size());
+                delayedRef.resize(channelSignal.size());
                 
                 if (areVectorsEqual(channelSignal, delayedRef, amplitudeTolerance_dB)) {
                     thisChannelPassed = true; // We found a match for this channel
