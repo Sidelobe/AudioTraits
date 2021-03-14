@@ -64,8 +64,8 @@ template<typename T>
 static std::vector<T> createDirac(int lengthSamples)
 {
     std::vector<T> result(lengthSamples);
-    result[0] = 1.0;
-    std::fill(result.begin()+1, result.end(), 0.0);
+    result[0] = static_cast<T>(1.0);
+    std::fill(result.begin()+1, result.end(), static_cast<T>(0.0));
     return result;
 }
 
