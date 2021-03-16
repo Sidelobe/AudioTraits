@@ -33,8 +33,17 @@ public:
         m_splitTableB(fftLength/2),
         m_twiddleTable(fftLength/2)
     {
-        tw_gen(reinterpret_cast<float*>(&m_twiddleTable[0]), fftLength/2);
-        split_gen(reinterpret_cast<float*>(&m_splitTableA[0]), reinterpret_cast<float*>(&m_splitTableB[0]), fftLength/2);
+        const int N = fftLength/2;
+        tw_gen(reinterpret_cast<float*>(&m_twiddleTable[0]), N);
+        split_gen(reinterpret_cast<float*>(&m_splitTableA[0]), reinterpret_cast<float*>(&m_splitTableB[0]), N);
+        
+        if (N == 4 || N == 16 || N == 64 || N == 256 || N == 1024 || N == 4096 || N == 16384) {
+            m_radix = 4;
+        } else if (N == 8 || N == 32 || N == 128 || N == 512 || N == 2048 || N == 8192) {
+            m_radix = 2;
+        } else {
+            ASSERT_ALWAYS("Length not supported");
+        }
     }
     
     /** Calculates the FFT for a real-valued input - using a split-complex FFT */
@@ -50,16 +59,15 @@ public:
             pseudoComplexInput[k] = { realInput[2*k+0], realInput[2*k+1] };
         }
         
-        std::vector<std::complex<float>> complexOutput(N);
-        const int radix = 4; // we don't care too much about efficiency, so we always use fixed radix
+        std::vector<std::complex<float>> complexOutput(N+1);
         const int offset = 0;
 
         // Forward FFT Calculation using a N-point complex FFT
         // TODO: casts
         DSPF_sp_fftSPxSP(N, (float*)&pseudoComplexInput[0], (float*)&m_twiddleTable[0], (float*)&complexOutput[0],
-                         (unsigned char*) brev.data(), radix, offset, N);
+                         (unsigned char*) brev.data(), m_radix, offset, N);
 
-        std::vector<std::complex<float>> result(m_fftLength);
+        std::vector<std::complex<float>> result(m_fftLength+1);
         FFT_Split(N, (float*)&complexOutput[0], (float*)&m_splitTableA[0], (float*)&m_splitTableB[0], (float*)&result[0]);
 
         // TODO: make buffers members so there's no allocation
@@ -118,6 +126,8 @@ private:
     std::vector<std::complex<float>> m_splitTableA;
     std::vector<std::complex<float>> m_splitTableB;
     std::vector<std::complex<float>> m_twiddleTable;
+    
+    int m_radix;
 
 };
 

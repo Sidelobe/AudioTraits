@@ -14,11 +14,16 @@ using namespace TestCommon;
 
 TEST_CASE("FFT Tests")
 {
-    RealValuedFFT fftForward(8);
+    int N = GENERATE(8, 16, 64, 1024);
+    RealValuedFFT fftForward(N);
     
-    std::vector<float> dirac = createDirac<float>(8);
+    std::vector<float> dirac = createDirac<float>(N);
     
     std::vector<std::complex<float>> result = fftForward.perform(dirac);
     
+    std::vector<std::complex<float>> expected(N+1, {1, 0});
+    REQUIRE(std::equal(result.begin(), result.end(), expected.begin(),
+                       [](auto& a, auto& b) { return std::abs(a-b) < 1e-3f; })
+            );
 
 }
