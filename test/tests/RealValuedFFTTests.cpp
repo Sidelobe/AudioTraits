@@ -40,14 +40,17 @@ double calculateStdDev(std::vector<float> data)
 
 TEST_CASE("RealValuedFFT Tests")
 {
-    int N = GENERATE(16, 512, 4096, 16384); // TODO: 32k does not work??
+    int fftLength = GENERATE(16, 500, 4000, 16384); // TODO: 32k does not work??
+    
+    RealValuedFFT fft(fftLength); // will choose next-higher power of 2
+    const int N = Utils::nextPowerOfTwo(fftLength);
     const int numBins = N/2 + 1;
-    RealValuedFFT fft(N);
+    int signalLength = N;
     
     SECTION("Forward Transform") {
     
         SECTION("Zeros / no signal") {
-            std::vector<float> zeros(N, 0);
+            std::vector<float> zeros(signalLength, 0);
             std::vector<std::complex<float>> result = fft.performForward(zeros);
 
             REQUIRE(result.size() == numBins);
@@ -58,7 +61,7 @@ TEST_CASE("RealValuedFFT Tests")
             REQUIRE(magnitude == std::vector<float>(numBins, 0.f));
         }
         SECTION("Dirac Input") {
-            std::vector<float> dirac = createDirac<float>(N);
+            std::vector<float> dirac = createDirac<float>(signalLength);
             std::vector<std::complex<float>> result = fft.performForward(dirac);
             
             REQUIRE(result.size() == numBins);
@@ -74,7 +77,7 @@ TEST_CASE("RealValuedFFT Tests")
         SECTION("Sine Input") {
             float sampleRate = 48e3f;
             float frequency = GENERATE(1000, 200, 10000, 24e3);
-            std::vector<float> sine = createSine<float>(frequency, sampleRate, N);
+            std::vector<float> sine = createSine<float>(frequency, sampleRate, signalLength);
             std::vector<std::complex<float>> result = fft.performForward(sine);
 
             REQUIRE(result.size() == numBins);
@@ -93,7 +96,7 @@ TEST_CASE("RealValuedFFT Tests")
             }
         }
         SECTION("Noise Input") {
-            std::vector<float> noise = createRandomVector(N);
+            std::vector<float> noise = createRandomVector(signalLength);
             std::vector<std::complex<float>> result = fft.performForward(noise);
  
             REQUIRE(result.size() == numBins);
@@ -113,15 +116,12 @@ TEST_CASE("RealValuedFFT Tests")
         REQUIRE(std::equal(result.begin(), result.end(), expected.begin()));
     }
     
-    SECTION("Chain of FFT and IFFT") {
-        std::vector<std::complex<float>> freqDomainBuffer(numBins);
-        std::vector<float> timeDomainBuffer(N);
-        
-        std::vector<float> noise = createRandomVector(N);
+    SECTION("Chain of FFT and IFFT") {        
+        std::vector<float> noise = createRandomVector(signalLength);
         std::vector<std::complex<float>> result = fft.performForward(noise);
 
         std::vector<float> restoredNoise = fft.performInverse(result);
-        
+        REQUIRE(restoredNoise.size() == noise.size());
         REQUIRE(std::equal(noise.begin(), noise.end(), restoredNoise.begin(), [](auto& a, auto& b)
         {
             return std::abs(a-b) < 1e-6f;
@@ -132,7 +132,7 @@ TEST_CASE("RealValuedFFT Tests")
         
         if (N == 16) {
             std::vector<float> testSequence { 0.062500, 0.125000, 0.187500, 0.250000, 0.312500, 0.375000, 0.437500, 0.500000,
-                                            0.562500, 0.625000, 0.687500, 0.750000, 0.812500, 0.875000, 0.937500, 1.000000 };
+                                              0.562500, 0.625000, 0.687500, 0.750000, 0.812500, 0.875000, 0.937500, 1.000000 };
 
             REQUIRE(testSequence.size() == N);
             

@@ -35,7 +35,7 @@ static bool check(const ISignal& signal, const ChannelSelection& channelSelectio
 }
 
 /** @returns true if a >= b (taking into account tolerance [dB]) */
-bool areVectorsEqual(const std::vector<float>& a, const std::vector<float>& b, float tolerance_dB)
+static inline bool areVectorsEqual(const std::vector<float>& a, const std::vector<float>& b, float tolerance_dB)
 {
     ASSERT(a.size() == b.size(), "Vectors must be of equal length for comparison");
     return std::equal(a.begin(), a.end(), b.begin(), [&tolerance_dB](float a, float b)
@@ -129,7 +129,6 @@ struct IsDelayedVersionOf
  * sample-by-sample basis.
  *
  * Optionally, error tolerance for the matching can be specified in dB
- *
  */
 struct HasIdenticalChannels
 {
@@ -158,7 +157,6 @@ struct HasIdenticalChannels
  * sample-by-sample basis.
  *
  * Optionally, error tolerance for the matching can be specified in dB
- *
  */
 struct HaveIdenticalChannels
 {
@@ -175,7 +173,19 @@ struct HaveIdenticalChannels
         }
         return true;
     }
-  
+};
+
+/**
+ * Evaluates if all the selected channels have frequency content above a certain threshold (relative to dB full scale),
+ * in the specified range.
+ */
+struct HasSignalInFrequencyRange
+{
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, std::pair<float, float> frequencyRange, float threshold_dB = -96.f)
+    {
+        
+        return true;
+    }
 };
 
 } // namespace AudioTraits

@@ -74,6 +74,21 @@ static inline float linear2Db(float value_linear)
     return std::numeric_limits<float>::lowest();
 }
 
+/**
+ * @note from: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+ */
+static inline uint32_t nextPowerOfTwo(uint32_t i)
+{
+    i--;
+    i |= i >> 1;
+    i |= i >> 2;
+    i |= i >> 4;
+    i |= i >> 8;
+    i |= i >> 16;
+    i++;
+    return i;
+}
+
 } // namespace Utils
 
 

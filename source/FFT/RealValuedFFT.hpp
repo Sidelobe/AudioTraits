@@ -27,16 +27,13 @@ class RealValuedFFT
 {
 public:
     RealValuedFFT(int fftLength) :
-        m_fftLength(fftLength),
-        m_splitTableA(fftLength/2),
-        m_splitTableB(fftLength/2),
-        m_twiddleTable(fftLength/2)
+        m_fftLength(Utils::nextPowerOfTwo(fftLength)),
+        m_splitTableA(m_fftLength/2),
+        m_splitTableB(m_fftLength/2),
+        m_twiddleTable(m_fftLength/2)
     {
-        // TODO: power of 2
-        const int N = fftLength/2;
-        tw_gen(reinterpret_cast<float*>(&m_twiddleTable[0]), N);
-        split_gen(reinterpret_cast<float*>(&m_splitTableA[0]), reinterpret_cast<float*>(&m_splitTableB[0]), N);
-        
+        const int N = m_fftLength / 2;
+     
         if (N == 16 || N == 64 || N == 256 || N == 1024 || N == 4096 || N == 16384) {
             m_radix = 4;
         } else if (N == 8 || N == 32 || N == 128 || N == 512 || N == 2048 || N == 8192) {
@@ -52,8 +49,7 @@ public:
     /** Calculates the FFT for a real-valued input - using a split-complex FFT */
     std::vector<std::complex<float>> performForward(const std::vector<float>& realInput)
     {
-        ASSERT(realInput.size() == m_fftLength, "Signal length must match FFT Size");
-        // TODO: zero-pad
+        ASSERT(realInput.size() >= m_fftLength, "Signal length must match FFT Size"); // TODO: zero-padding
         
         // Trick: We calculate a complex FFT of length N/2  ('split complex FFT')
         const int N = m_fftLength / 2;
@@ -72,31 +68,31 @@ public:
         DSPF_sp_fftSPxSP(N, (float*)&pseudoComplexInput[0], (float*)&m_twiddleTable[0], (float*)&complexOutput[0],
                          (unsigned char*) brev.data(), m_radix, offset, N);
 
-        std::vector<std::complex<float>> result(m_fftLength+1); // entire length +1 required for calculation 
-        FFT_Split(N, (float*)&complexOutput[0], (float*)&m_splitTableA[0], (float*)&m_splitTableB[0], (float*)&result[0]);
+        std::vector<std::complex<float>> freqDomainBuffer(m_fftLength+1); // entire length +1 required for calculation
+        FFT_Split(N, (float*)&complexOutput[0], (float*)&m_splitTableA[0], (float*)&m_splitTableB[0], (float*)&freqDomainBuffer[0]);
 
         // TODO: make buffers members so there's no allocation
         
-        return {result.begin(), result.begin() + N+1}; // only return fftLength/2+1 complex pairs
+        return {freqDomainBuffer.begin(), freqDomainBuffer.begin() + N+1}; // only return fftLength/2+1 complex pairs
     }
     
     std::vector<float> performInverse(const std::vector<std::complex<float>>& complexInput)
     {
-        const int N = m_fftLength/2;
-        std::vector<std::complex<float>> tempComplexBuffer(N+1);
+        const int N = m_fftLength / 2;
+        std::vector<std::complex<float>> tempComplexBuffer(complexInput.size());
         
         // TODO: casts
         IFFT_Split(N, (float*)&complexInput[0], (float*)&m_splitTableA[0], (float*)&m_splitTableB[0], (float*)&tempComplexBuffer[0]);
         
-        std::vector<float> result(m_fftLength);
+        std::vector<float> timeDomainBuffer(m_fftLength);
         const int offset = 0;
         
         // Inverse FFT Calculation using N/2 complex IFFT
-        DSPF_sp_ifftSPxSP(N, (float*)&tempComplexBuffer[0], (float*)&m_twiddleTable[0], (float*)&result[0],
+        DSPF_sp_ifftSPxSP(N, (float*)&tempComplexBuffer[0], (float*)&m_twiddleTable[0], (float*)&timeDomainBuffer[0],
                           (unsigned char*) brev.data(), m_radix, offset, N);
         
         // TODO: make buffers members so there's no allocation
-        return result;
+        return timeDomainBuffer;
     }
     
 private:
