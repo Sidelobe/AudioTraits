@@ -72,7 +72,7 @@ public:
 
         // TODO: make buffers members so there's no allocation
         
-        return result;
+        return {result.begin(), result.begin() + N+1}; // only return fftLength/2+1 complex pairs
     }
     
 private:
