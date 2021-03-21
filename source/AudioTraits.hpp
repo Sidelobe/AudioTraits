@@ -8,9 +8,14 @@
 #pragma once
 
 #include <algorithm>
+#include <set>
+#include <vector>
 
 #include "ChannelSelection.hpp"
 #include "SignalAdapters.hpp"
+
+// for frequency-domain traits
+#include "FFT/RealValuedFFT.hpp"
 
 namespace slb {
 namespace AudioTraits {
@@ -176,15 +181,101 @@ struct HaveIdenticalChannels
     }
 };
 
+
+// MARK: - Frequency-Domain Traits (TODO: move to separate file?)
+
 /**
- * Evaluates if all the selected channels have frequency content above a certain threshold (relative to dB full scale),
- * in the specified range.
+ * Evaluates if all the selected channels have frequency content in all the specified ranges, and none in the
+ * rest of the spectrum. Frequency content is considered above a certain threshold in dB (relative to full scale)
  */
-struct HasSignalInFrequencyRange
+struct HasSignalOnlyInFrequencyRanges
 {
-    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, std::pair<float, float> frequencyRange, float threshold_dB = -96.f)
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, std::set<std::pair<float, float>> frequencyRanges,
+                     float sampleRate, float threshold_dB = -8.f, float narrowness_Hz = 10)
     {
+        // TODO: how to analyze frequencies efficiently?
+        // zero-pad to a minimum signal length, fixed FFT size
+        // need windowing between the calls? (apply before zero-padding
+        //
         
+        /*
+             % Experiment in Octave
+             signalLengthSeconds = 1;
+             fs = 48e3;
+             t = [0:1/fs:signalLengthSeconds-1/fs];
+             signal = sin(2*pi*t * 1000); %+ 0.5*sin(2*pi*t * 10000);
+
+             fftN = 8192;
+             spectrum = fft(signal, fftN);
+             spectrum = spectrum(1:fftN/2);
+             spectrum = spectrum ./ (length(signal)/2); % scaling
+
+             freqVec = (0:fftN/2-1)*fs/fftN;
+             plot(freqVec, abs(spectrum));
+         */
+        const int fftLength = 1 << 10;
+        ASSERT(Utils::nextPowerOfTwo(fftLength) == fftLength, "FFT has to be power of 2");
+        int numBins = fftLength / 2 + 1;
+        RealValuedFFT fft(fftLength);
+        
+        // TODO: loop over all ranges -- or create list of 'acceptable' bins
+        float freqStart = std::get<0>(*frequencyRanges.begin());
+        float freqEnd = std::get<1>(*frequencyRanges.begin());
+        int expectedBinStart = static_cast<int>(std::floor(freqStart / sampleRate * fftLength));
+        int expectedBinEnd = static_cast<int>(std::ceil(freqEnd / sampleRate * fftLength));
+        ASSERT(expectedBinStart >= 0, "invalid frequency range");
+        ASSERT(expectedBinEnd < numBins, "frequency range too high for this sampling rate");
+        
+        for (int chNumber : selectedChannels) {
+            std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
+            
+            bool hasValidSignal = false;
+            
+            // TODO: add windowing
+            // perform FFT in several chunks
+            int chunkSize = fftLength;
+            float numChunksFract = static_cast<float>(channelSignal.size()) / chunkSize;
+            int numChunks = static_cast<int>(std::ceil(numChunksFract));
+            channelSignal.resize(numChunks * chunkSize); // pad to a multiple of full chunks
+            
+            // Average over chunks - init with 0
+            std::vector<float> avgMagnitude(numBins, 0.f);
+            
+            for (int chunkIndex = 0; chunkIndex < numChunks; ++chunkIndex) {
+                auto chunkBegin = channelSignal.begin() + chunkIndex * chunkSize;
+                auto chunkEnd = chunkBegin + chunkSize;
+
+                std::vector<std::complex<float>> freqData = fft.performForward({chunkBegin, chunkEnd});
+                std::vector<float> magnitude;
+                for (auto& binValue : freqData) {
+                    magnitude.push_back(std::abs(binValue) / fftLength); // scaling
+                }
+                // TODO: combine
+                for (auto& binMag : magnitude) {
+                    binMag /= numChunks; // averaging
+                }
+                
+                // avgFreqData += freqData
+                ASSERT(magnitude.size() == avgMagnitude.size());
+                std::transform(avgMagnitude.begin(), avgMagnitude.end(), magnitude.begin(), avgMagnitude.begin(), std::plus<float>());
+            }
+            
+            for (int binIndex = 0; binIndex < numBins; ++binIndex) {
+                float mag_dB = Utils::linear2Db(avgMagnitude.at(binIndex));
+                bool binHasContent = (mag_dB >= threshold_dB);
+                
+                if (binHasContent) {
+                    if (binIndex < expectedBinStart || binIndex > expectedBinEnd) {
+                        return false; // there's signal in at least one bin outside the selected range
+                    } else {
+                        hasValidSignal = true;
+                    }
+                }
+            }
+            if (hasValidSignal == false) {
+                return false; // channel did not have signal in any bin
+            }
+        }
         return true;
     }
 };
