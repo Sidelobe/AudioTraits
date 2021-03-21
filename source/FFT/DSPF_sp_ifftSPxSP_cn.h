@@ -185,8 +185,8 @@
 /*                           All Rights Reserved.                          */
 /* ========================================================================*/
 
-void DSPF_sp_ifftSPxSP(int N, float * ptr_x, float * ptr_w, float * ptr_y,
-                       unsigned char * brev, int n_min, int offset, int n_max)
+static void DSPF_sp_ifftSPxSP(int N, float * ptr_x, float * ptr_w, float * ptr_y,
+                              unsigned char * brev, int n_min, int offset, int n_max)
 {
     int  i, j, k, l1, l2, h2, predj;
     int  tw_offset, stride, fft_jmp;

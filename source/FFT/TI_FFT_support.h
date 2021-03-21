@@ -21,7 +21,7 @@ static const std::array<unsigned char, 64> brev {
 };
 
 /** Function for generating Specialized sequence of twiddle factors */
-void tw_gen (float *w, int n)
+static void tw_gen (float *w, int n)
 {
     int i, j, k;
     double x_t, y_t, theta1, theta2, theta3;
@@ -52,7 +52,7 @@ void tw_gen (float *w, int n)
     }
 }
 
-void split_gen (float *pATable, float *pBTable, int n)
+static void split_gen (float *pATable, float *pBTable, int n)
 {
     int i;
 
@@ -65,7 +65,7 @@ void split_gen (float *pATable, float *pBTable, int n)
     }
 }
 
-void FFT_Split (int n, float *pIn, float *pATable, float *pBTable, float *pOut)
+static void FFT_Split (int n, float *pIn, float *pATable, float *pBTable, float *pOut)
 {
     int i;
     float Tr, Ti;
@@ -97,7 +97,7 @@ void FFT_Split (int n, float *pIn, float *pATable, float *pBTable, float *pOut)
 
 }
 
-void IFFT_Split (int n, float *pIn, float *pATable, float *pBTable, float *pOut)
+static void IFFT_Split (int n, float *pIn, float *pATable, float *pBTable, float *pOut)
 {
     int i;
     float Tr, Ti;
