@@ -19,6 +19,7 @@ namespace AudioTraits {
 template<typename F, typename ... Is>
 static bool check(const ISignal& signal, const ChannelSelection& channelSelection, Is&& ... traitParams)
 {
+    ASSERT(signal.getNumSamples() > 0);
     std::set<int> selectedChannels = channelSelection.get();
     ASSERT(selectedChannels.size() <= signal.getNumChannels());
     std::for_each(selectedChannels.begin(), selectedChannels.end(), [&signal](auto& i) { ASSERT(i<=signal.getNumChannels()); });

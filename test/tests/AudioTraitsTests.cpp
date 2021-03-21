@@ -55,12 +55,16 @@ TEST_CASE("AudioTraits Generic Tests")
     DummyTrait::lastSelectedChannels = {};
     SECTION("Empty signal") {
         DummySignal signal(0, 0);
-        REQUIRE(check<DummyTrait>(signal, {}));
+        REQUIRE_THROWS(check<DummyTrait>(signal, {})); // signal cannot have 0 samples
+        REQUIRE_FALSE(DummyTrait::called);
+        
+        DummySignal signal1(0, 1);
+        REQUIRE(check<DummyTrait>(signal1, {}));
         REQUIRE(DummyTrait::called);
     }
 
     SECTION("Illegal channel selections") {
-        DummySignal signal(2, 0);
+        DummySignal signal(2, 1);
         REQUIRE(check<DummyTrait>(signal, {1, 2}));
         REQUIRE(DummyTrait::called); DummyTrait::called = false;
         REQUIRE(check<DummyTrait>(signal, {{1, 2}}));
@@ -73,7 +77,7 @@ TEST_CASE("AudioTraits Generic Tests")
     }
     
     SECTION("Empty selection = all channels") {
-        DummySignal signal(4, 0);
+        DummySignal signal(4, 1);
         REQUIRE(check<DummyTrait>(signal, {}));
         REQUIRE(DummyTrait::lastSelectedChannels == std::set<int>{1, 2, 3, 4});
     }

@@ -78,7 +78,7 @@ static std::vector<T> createSine(float frequency, float fs, int lengthSamples)
     std::for_each(result.begin(), result.end(), [&phase, &angularFrequency](auto& value)
     {
         phase = fmod(phase + angularFrequency, 2.f * static_cast<float>(M_PI));
-        value = std::sin(phase);
+        value = static_cast<T>(std::sin(phase));
     });
     return result;
 }
