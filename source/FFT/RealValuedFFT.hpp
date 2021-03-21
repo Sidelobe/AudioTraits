@@ -34,7 +34,7 @@ public:
     {
         const int N = m_fftLength / 2;
      
-        if (N == 16 || N == 64 || N == 256 || N == 1024 || N == 4096 || N == 16384) {
+        if (N == 16 || N == 64 || N == 256 || N == 1024 || N == 4096) {
             m_radix = 4; // is power of 4 (exponent even?)
         } else if (N == 8 || N == 32 || N == 128 || N == 512 || N == 2048 || N == 8192) {
             m_radix = 2; // is power of 2 and not of 4 (exponent odd?)

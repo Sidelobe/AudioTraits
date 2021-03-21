@@ -40,7 +40,8 @@ double calculateStdDev(std::vector<float> data)
 
 TEST_CASE("RealValuedFFT Tests")
 {
-    int fftLength = GENERATE(16, 500, 4000, 16384); // TODO: 32k does not work??
+    // choose some non-power-of-2 on purpose
+    int fftLength = GENERATE(16, 500, 4000, 16384);
     
     RealValuedFFT fft(fftLength); // will choose next-higher power of 2
     const int N = Utils::nextPowerOfTwo(fftLength);
