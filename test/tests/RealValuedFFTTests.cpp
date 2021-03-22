@@ -18,10 +18,9 @@ using namespace std::complex_literals;
 
 std::vector<float> calculateNormalizedMagnitude(std::vector<std::complex<float>> binData)
 {
-    int numSamples = (static_cast<int>(binData.size()) - 1) * 2;
     std::vector<float> magnitude;
     for (auto& binValue : binData) {
-        magnitude.push_back(std::abs(binValue) / numSamples);
+        magnitude.push_back(std::abs(binValue));
     }
     float maxValue = *std::max_element(magnitude.begin(), magnitude.end());
     maxValue = std::max(1e-9f, maxValue); // avoid div by zero
@@ -90,7 +89,12 @@ TEST_CASE("RealValuedFFT Tests")
             // other bins are more than 4dB below
             for (int binIndex = 0; binIndex < numBins; ++binIndex) {
                 if (binIndex == expectedBin) continue;
-                REQUIRE(magnitude[binIndex] < Utils::dB2Linear(-4.f));
+                if (N < 4096) {
+                    REQUIRE(magnitude[binIndex] < Utils::dB2Linear(-4.f));
+                } else {
+                    // for 4096 and above, we get 6 dB "SNR"
+                    REQUIRE(magnitude[binIndex] < Utils::dB2Linear(-6.f));
+                }
             }
             if (N >= 512) {
                 REQUIRE(calculateStdDev(magnitude) <= 0.075f);

@@ -205,15 +205,15 @@ struct HasSignalOnlyInFrequencyRanges
              t = [0:1/fs:signalLengthSeconds-1/fs];
              signal = sin(2*pi*t * 1000); %+ 0.5*sin(2*pi*t * 10000);
 
-             fftN = 8192;
+             fftN = 16384;
              spectrum = fft(signal, fftN);
              spectrum = spectrum(1:fftN/2);
-             spectrum = spectrum ./ (length(signal)/2); % scaling
+             mag = abs(spectrum ./fs); % scaling
 
              freqVec = (0:fftN/2-1)*fs/fftN;
-             plot(freqVec, abs(spectrum));
+             plot(freqVec, mag);
          */
-        const int fftLength = 1 << 10;
+        const int fftLength = 4096;
         ASSERT(Utils::nextPowerOfTwo(fftLength) == fftLength, "FFT has to be power of 2");
         int numBins = fftLength / 2 + 1;
         RealValuedFFT fft(fftLength);
