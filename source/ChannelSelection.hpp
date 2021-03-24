@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <array>
-#include <numeric>
 #include <set>
 #include <vector>
 #include <utility>
@@ -21,7 +19,7 @@ namespace slb
 class SelectionItem
 {
 public:
-    /** Discrete */
+    /** Discrete (deliberately non-explicit ctor) */
     SelectionItem(int channel) : m_selection({channel})
     {
         ASSERT(channel > 0, "invalid channel!");
@@ -44,7 +42,6 @@ private:
 
 class ChannelSelection
 {
-    using size_type = std::size_t;
 public:
     ChannelSelection(std::initializer_list<SelectionItem> selectionItems) : m_selectionItems(selectionItems) {}
     
