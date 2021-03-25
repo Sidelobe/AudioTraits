@@ -45,11 +45,7 @@ class FrequencySelection
 {
 public:
     FrequencySelection(std::initializer_list<FrequencyRange> selectedRanges) : m_selectedRanges(selectedRanges) {}
-    
-    /** convenience ctor to allow building a selection from single component without { } */
-    FrequencySelection(float singleComponent) :
-        m_selectedRanges{FrequencyRange(singleComponent)} {}
-    
+
     std::set<std::pair<float, float>> get() const
     {
         std::set<std::pair<float, float>> result;
