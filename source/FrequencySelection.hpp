@@ -45,7 +45,7 @@ class FrequencySelection
 {
 public:
     FrequencySelection(std::initializer_list<FrequencyRange> selectedRanges) : m_selectedRanges(selectedRanges) {}
-
+    
     std::set<std::pair<float, float>> get() const
     {
         std::set<std::pair<float, float>> result;

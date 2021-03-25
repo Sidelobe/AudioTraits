@@ -26,20 +26,21 @@ TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
     SignalAdapterAudioFile<float> sine1kHz(audioFile);
     
     float sampleRate = 48e3;
+    
+    
     auto sine1kSignal = createSine<float>(1000, sampleRate, static_cast<int>(sampleRate));
     auto sine2kSignal = createSine<float>(2000, sampleRate, static_cast<int>(sampleRate));
     std::vector<std::vector<float>> sineData {sine1kSignal, sine2kSignal};
     SignalAdapterStdVecVec sineGenerated(sineData);
     
-    REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1}, std::set<std::pair<float, float>>{std::make_pair<float,float>(1000, 1000)}, sampleRate));
-    REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {2}, std::set<std::pair<float, float>>{std::make_pair<float,float>(2000, 2000)}, sampleRate));
-    REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, std::set<std::pair<float, float>>{std::make_pair<float,float>(1000, 2000)}, sampleRate));
+    REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1}, FrequencySelection{1000}, sampleRate));
+    REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {2}, FrequencySelection{2000}, sampleRate));
+    REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, FrequencySelection{{1000, 2000}}, sampleRate));
     
-    REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, std::set<std::pair<float, float>>{std::make_pair<float,float>(20, 900)}, sampleRate)); // No signal
-    REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, std::set<std::pair<float, float>>{std::make_pair<float,float>(2100, 22000)}, sampleRate)); // No signal
+    REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, FrequencySelection{{20, 900}}, sampleRate)); // No signal
+    REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, FrequencySelection{{2100, 22000}}, sampleRate)); // No signal
     
-    REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, std::set<std::pair<float, float>>{std::make_pair<float,float>(-10, 1)}, sampleRate)); // Outside
-    REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, std::set<std::pair<float, float>>{std::make_pair<float,float>(25000, 300000)}, sampleRate)); // Outside possible bin range
-
+    REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, FrequencySelection{{-10, 1}}, sampleRate)); // Outside
+    REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1, 2}, FrequencySelection{{25000, 300000}}, sampleRate)); // Outside possible bin range
 
 }

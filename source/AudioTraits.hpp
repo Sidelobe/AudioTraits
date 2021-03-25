@@ -16,6 +16,7 @@
 
 // for frequency-domain traits
 #include "FFT/RealValuedFFT.hpp"
+#include "FrequencySelection.hpp"
 
 namespace slb {
 namespace AudioTraits {
@@ -190,7 +191,7 @@ struct HaveIdenticalChannels
  */
 struct HasSignalOnlyInFrequencyRanges
 {
-    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, std::set<std::pair<float, float>> frequencyRanges,
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, FrequencySelection frequencySelection,
                      float sampleRate, float threshold_dB = -8.f, float narrowness_Hz = 10)
     {
         // TODO: how to analyze frequencies efficiently?
@@ -219,8 +220,9 @@ struct HasSignalOnlyInFrequencyRanges
         RealValuedFFT fft(fftLength);
         
         // TODO: loop over all ranges -- or create list of 'acceptable' bins
-        float freqStart = std::get<0>(*frequencyRanges.begin());
-        float freqEnd = std::get<1>(*frequencyRanges.begin());
+        std::pair<float, float> firstSelectedRange = *frequencySelection.get().begin();
+        float freqStart = std::get<0>(firstSelectedRange);
+        float freqEnd = std::get<1>(firstSelectedRange);
         int expectedBinStart = static_cast<int>(std::floor(freqStart / sampleRate * fftLength));
         int expectedBinEnd = static_cast<int>(std::ceil(freqEnd / sampleRate * fftLength));
         ASSERT(expectedBinStart >= 0, "invalid frequency range");
