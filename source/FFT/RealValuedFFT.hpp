@@ -14,12 +14,25 @@
 
 #include "Utils.hpp"
 
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wold-style-cast"
+#elif defined __GNUC__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
 extern "C"
 {
 #include "DSPF_sp_fftSPxSP_cn.h"
 #include "DSPF_sp_ifftSPxSP_cn.h"
 #include "TI_FFT_support.h"
 }
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#elif defined __GNUC__
+    #pragma GCC diagnostic pop
+#endif
+
 
 namespace slb {
 
