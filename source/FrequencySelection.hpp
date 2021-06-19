@@ -35,11 +35,11 @@ public:
         ASSERT(uppperBound > 0, "invalid upper bound!");
     }
     
-    std::set<std::pair<float, float>> get() const { return { m_range.begin(), m_range.end() }; }
-    int size() const { return static_cast<int>(m_range.size()); }
+    std::pair<float, float> get() const { return m_range; }
+    float size() const { return std::abs(std::get<1>(m_range) - std::get<0>(m_range)); }
 
 private:
-    std::vector<std::pair<float, float>> m_range;
+    std::pair<float, float> m_range;
 };
 
 
@@ -52,8 +52,7 @@ public:
     {
         std::set<std::pair<float, float>> result;
         for (auto& item : m_selectedRanges) {
-            auto itemSelection = item.get();
-            result.insert(itemSelection.begin(), itemSelection.end());
+            result.insert(item.get());
         }
         return result;
     }
