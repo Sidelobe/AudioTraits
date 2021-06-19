@@ -36,11 +36,12 @@ TEST_CASE("FrequencySelection Tests")
     // need to use {} initializers here as soon as we have more than one range
     REQUIRE_NOTHROW(FrequencySelection({20, 300}));
     REQUIRE_NOTHROW(FrequencySelection({1000}));
+    REQUIRE_NOTHROW(FrequencySelection({})); // this possible
 
     using PairSet = std::set<std::pair<float, float>>;
     REQUIRE(FrequencySelection{{20, 300}}.get() == PairSet{std::make_pair(20, 300)});
     REQUIRE(FrequencySelection{3000}.get() == PairSet{std::make_pair(3000, 3000)});
-    
+    REQUIRE(FrequencySelection({}).get().empty());
     REQUIRE(FrequencySelection{1000, {20, 300}}.get() == PairSet{{20, 300}, std::make_pair(1000, 1000)});
     
     // duplication

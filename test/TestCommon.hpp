@@ -70,15 +70,16 @@ static std::vector<T> createDirac(int lengthSamples)
 }
 
 template<typename T>
-static std::vector<T> createSine(float frequency, float fs, int lengthSamples)
+static std::vector<T> createSine(float frequency, float fs, int lengthSamples, float gain_dB = 0.f)
 {
     std::vector<T> result(lengthSamples);
     double angularFrequency = 2 * M_PI * frequency / fs;
     double phase = angularFrequency;
-    std::for_each(result.begin(), result.end(), [&phase, &angularFrequency](auto& value)
+    float gain = powf(10.f, (gain_dB/20.f));
+    std::for_each(result.begin(), result.end(), [&phase, &angularFrequency, &gain](auto& value)
     {
         phase = fmod(phase + angularFrequency, 2.f * static_cast<float>(M_PI));
-        value = static_cast<T>(std::sin(phase));
+        value = static_cast<T>(gain * std::sin(phase));
     });
     return result;
 }

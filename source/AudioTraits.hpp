@@ -185,20 +185,34 @@ struct HaveIdenticalChannels
 
 // MARK: - Frequency-Domain Traits (TODO: move to separate file?)
 
+template<typename T=float>
+void applyHannWindow(std::vector<T>& channelSignal)
+{
+    int i=0;
+    for (auto& sample : channelSignal) {
+        double window = 0.5 * (1 - std::cos(2*M_PI * i++ / (channelSignal.size()-1)));
+        sample *= static_cast<T>(window);
+    }
+}
+
 /**
  * Evaluates if all the selected channels have frequency content in all the specified ranges, and none in the
- * rest of the spectrum. Frequency content is considered above a certain threshold in dB (relative to full scale)
+ * rest of the spectrum.
+ *
+ * To count as 'there is frequency content', it needs to be above a certain threshold in dB (relative to the maximum bin).
+ * If any other frequency ranges (FFT bins) reach this threshold, the result will be 'false'
+ *
+ * TODO: add option to re-use 'cache' the FFT results instead of recalculating every time.
  */
 struct HasSignalOnlyInFrequencyRanges
 {
+    /***/
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, FrequencySelection frequencySelection,
-                     float sampleRate, float threshold_dB = -8.f, float narrowness_Hz = 10)
+                     float sampleRate, float threshold_dB = -0.5f, float narrowness_Hz = 10)
     {
         // TODO: how to analyze frequencies efficiently?
         // zero-pad to a minimum signal length, fixed FFT size
         // need windowing between the calls? (apply before zero-padding
-        //
-        
         /*
              % Experiment in Octave
              signalLengthSeconds = 1;
@@ -214,9 +228,9 @@ struct HasSignalOnlyInFrequencyRanges
              freqVec = (0:fftN/2-1)*fs/fftN;
              plot(freqVec, mag);
          */
-        const int fftLength = 4096;
+        constexpr int fftLength = 4096;
         ASSERT(Utils::nextPowerOfTwo(fftLength) == fftLength, "FFT has to be power of 2");
-        int numBins = fftLength / 2 + 1;
+        constexpr int numBins = fftLength / 2 + 1;
         RealValuedFFT fft(fftLength);
         
         // TODO: loop over all ranges -- or create list of 'acceptable' bins
@@ -233,40 +247,43 @@ struct HasSignalOnlyInFrequencyRanges
             
             bool hasValidSignal = false;
             
-            // TODO: add windowing
             // perform FFT in several chunks
             int chunkSize = fftLength;
             float numChunksFract = static_cast<float>(channelSignal.size()) / chunkSize;
             int numChunks = static_cast<int>(std::ceil(numChunksFract));
             channelSignal.resize(numChunks * chunkSize); // pad to a multiple of full chunks
             
-            // Average over chunks - init with 0
-            std::vector<float> avgMagnitude(numBins, 0.f);
+            // Accumulated over all chunks - init with 0
+            std::vector<float> accumulatedBins(numBins, 0.f);
             
             for (int chunkIndex = 0; chunkIndex < numChunks; ++chunkIndex) {
                 auto chunkBegin = channelSignal.begin() + chunkIndex * chunkSize;
-                auto chunkEnd = chunkBegin + chunkSize;
-
-                std::vector<std::complex<float>> freqData = fft.performForward({chunkBegin, chunkEnd});
-                std::vector<float> magnitude;
-                for (auto& binValue : freqData) {
-                    magnitude.push_back(std::abs(binValue) / fftLength); // scaling
-                }
-                // TODO: combine
-                for (auto& binMag : magnitude) {
-                    binMag /= numChunks; // averaging
+                std::vector<float> chunkTimeDomain{chunkBegin, chunkBegin + chunkSize};
+               
+                applyHannWindow(chunkTimeDomain);
+                
+                std::vector<std::complex<float>> freqDomainData = fft.performForward(chunkTimeDomain);
+                std::vector<float> binValuesForChunk;
+                for (auto& binValue : freqDomainData) {
+                    binValuesForChunk.emplace_back(std::abs(binValue));
                 }
                 
-                // avgFreqData += freqData
-                ASSERT(magnitude.size() == avgMagnitude.size());
-                std::transform(avgMagnitude.begin(), avgMagnitude.end(), magnitude.begin(), avgMagnitude.begin(), std::plus<float>());
+                // accumulate: accumulatedBins += binValues
+                ASSERT(binValuesForChunk.size() == accumulatedBins.size());
+                std::transform(accumulatedBins.begin(), accumulatedBins.end(), binValuesForChunk.begin(),
+                               accumulatedBins.begin(), std::plus<float>());
             }
             
+            // normally, we would normalize then bin values with numChunks and fftLength, but here
+            // we choose to define the highest-valued bin as 0dB, therefore we normalize by it
+            float maxBinValue = *std::max_element(accumulatedBins.begin(), accumulatedBins.end());
+            for (auto& binValue : accumulatedBins) {
+                binValue /= maxBinValue;
+            }
+        
             for (int binIndex = 0; binIndex < numBins; ++binIndex) {
-                float mag_dB = Utils::linear2Db(avgMagnitude.at(binIndex));
-                bool binHasContent = (mag_dB >= threshold_dB);
-                
-                if (binHasContent) {
+                float binValue_dB = Utils::linear2Db(accumulatedBins.at(binIndex));
+                if (binValue_dB >= threshold_dB) {
                     if (binIndex < expectedBinStart || binIndex > expectedBinEnd) {
                         return false; // there's signal in at least one bin outside the selected range
                     } else {
