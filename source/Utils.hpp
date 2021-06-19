@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <cmath>
 #include <sstream>
 #include <type_traits>
 
@@ -62,16 +63,36 @@ namespace Utils
 
 static inline float dB2Linear(float value_dB)
 {
-    return powf(10.f, (value_dB/20.f));
+    return std::pow(10.f, (value_dB/20.f));
 }
 
 static inline float linear2Db(float value_linear)
 {
     // avoid log(0)
     if (value_linear > 0.f) {
-        return 20.f * log10f(value_linear);
+        return 20.f * std::log10(value_linear);
     }
     return std::numeric_limits<float>::lowest();
+}
+
+/**
+ * @note from: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+ */
+static inline uint32_t nextPowerOfTwo(uint32_t i)
+{
+    i--;
+    i |= i >> 1;
+    i |= i >> 2;
+    i |= i >> 4;
+    i |= i >> 8;
+    i |= i >> 16;
+    i++;
+    return i;
+}
+
+constexpr bool isPowerOfTwo(uint32_t v)
+{
+    return v && ((v & (v - 1)) == 0);
 }
 
 } // namespace Utils

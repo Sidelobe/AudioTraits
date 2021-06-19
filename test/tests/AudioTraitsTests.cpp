@@ -6,6 +6,7 @@
 //  © 2021 Lorenz Bucher - all rights reserved
 
 #include "TestCommon.hpp"
+#include "SignalGenerator.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -55,12 +56,16 @@ TEST_CASE("AudioTraits Generic Tests")
     DummyTrait::lastSelectedChannels = {};
     SECTION("Empty signal") {
         DummySignal signal(0, 0);
-        REQUIRE(check<DummyTrait>(signal, {}));
+        REQUIRE_THROWS(check<DummyTrait>(signal, {})); // signal cannot have 0 samples
+        REQUIRE_FALSE(DummyTrait::called);
+        
+        DummySignal signal1(0, 1);
+        REQUIRE(check<DummyTrait>(signal1, {}));
         REQUIRE(DummyTrait::called);
     }
 
     SECTION("Illegal channel selections") {
-        DummySignal signal(2, 0);
+        DummySignal signal(2, 1);
         REQUIRE(check<DummyTrait>(signal, {1, 2}));
         REQUIRE(DummyTrait::called); DummyTrait::called = false;
         REQUIRE(check<DummyTrait>(signal, {{1, 2}}));
@@ -73,7 +78,7 @@ TEST_CASE("AudioTraits Generic Tests")
     }
     
     SECTION("Empty selection = all channels") {
-        DummySignal signal(4, 0);
+        DummySignal signal(4, 1);
         REQUIRE(check<DummyTrait>(signal, {}));
         REQUIRE(DummyTrait::lastSelectedChannels == std::set<int>{1, 2, 3, 4});
     }
@@ -94,8 +99,8 @@ void scale(std::vector<std::vector<float>>& input, ChannelSelection channelSelec
 
 TEST_CASE("AudioTraits::SignalOnAllChannels Tests")
 {
-    std::vector<float> dataL = createRandomVector(16, 333 /*seed*/);
-    std::vector<float> dataR = createRandomVector(16, 666 /*seed*/);
+    std::vector<float> dataL = SignalGenerator::createWhiteNoise(16, 0.f, 333 /*seed*/);
+    std::vector<float> dataR = SignalGenerator::createWhiteNoise(16, 0.f, 666 /*seed*/);
     std::vector<float> zeros(16, 0);
     std::vector<std::vector<float>> buffer = { dataL, dataR };
     SignalAdapterStdVecVec signal(buffer);
@@ -130,9 +135,9 @@ TEST_CASE("AudioTraits::SignalOnAllChannels Tests")
 TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
 {
     int delay = GENERATE(1, 8, 32, 50);
-    std::vector<float> dirac = createDirac<float>(64);
+    std::vector<float> dirac = SignalGenerator::createDirac<float>(64);
     std::vector<float> zeros(delay, 0);
-    std::vector<float> diracDelayed = createDirac<float>(64-delay);
+    std::vector<float> diracDelayed = SignalGenerator::createDirac<float>(64-delay);
     diracDelayed.insert(diracDelayed.begin(), zeros.begin(), zeros.end());
     REQUIRE(diracDelayed.size() == 64);
 
@@ -170,9 +175,9 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
     }
     
     SECTION("check with more complex signals") {
-        std::vector<float> randomData1 = createRandomVector(64, 111 /*seed*/);
-        std::vector<float> randomData2 = createRandomVector(64, 112 /*seed*/);
-        std::vector<float> randomData3 = createRandomVector(64, 113 /*seed*/);
+        std::vector<float> randomData1 = SignalGenerator::createWhiteNoise(64, 0.f, 111 /*seed*/);
+        std::vector<float> randomData2 = SignalGenerator::createWhiteNoise(64, 0.f, 112 /*seed*/);
+        std::vector<float> randomData3 = SignalGenerator::createWhiteNoise(64, 0.f, 113 /*seed*/);
 
         std::vector<std::vector<float>> randomData { randomData1, randomData2, randomData3 };
         SignalAdapterStdVecVec randomSignal(randomData);
@@ -272,8 +277,8 @@ TEST_CASE("AudioTraits::IsDelayedVersionOf Tests")
 
 TEST_CASE("AudioTraits::HasIdenticalChannels Tests")
 {
-    std::vector<float> data1 = createRandomVector(16, 333 /*seed*/);
-    std::vector<float> data2 = createRandomVector(16, 666 /*seed*/);
+    std::vector<float> data1 = SignalGenerator::createWhiteNoise(16, 0.f, 333 /*seed*/);
+    std::vector<float> data2 = SignalGenerator::createWhiteNoise(16, 0.f, 666 /*seed*/);
     std::vector<float> zeros(16, 0);
     std::vector<std::vector<float>> buffer = { data1, data1, zeros, data2, zeros, data2 };
     SignalAdapterStdVecVec signal(buffer);
@@ -301,10 +306,10 @@ TEST_CASE("AudioTraits::HasIdenticalChannels Tests")
 
 TEST_CASE("AudioTraits::HaveIdenticalChannels Tests")
 {
-    std::vector<float> data1A = createRandomVector(16, 333 /*seed*/);
-    std::vector<float> data2A = createRandomVector(16, 666 /*seed*/);
-    std::vector<float> data1B = createRandomVector(16, 333 /*seed*/);
-    std::vector<float> data2B = createRandomVector(16, 666 /*seed*/);
+    std::vector<float> data1A = SignalGenerator::createWhiteNoise(16, 0.f, 333 /*seed*/);
+    std::vector<float> data2A = SignalGenerator::createWhiteNoise(16, 0.f, 666 /*seed*/);
+    std::vector<float> data1B = SignalGenerator::createWhiteNoise(16, 0.f, 333 /*seed*/);
+    std::vector<float> data2B = SignalGenerator::createWhiteNoise(16, 0.f, 666 /*seed*/);
     std::vector<float> zeros(16, 0);
     std::vector<std::vector<float>> bufferA = { data1A, data1A, zeros, data2A, zeros, data2A };
     std::vector<std::vector<float>> bufferB = { data1B, data2B, data1B, data2B, zeros, data2B };

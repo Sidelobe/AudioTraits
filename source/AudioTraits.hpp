@@ -8,9 +8,13 @@
 #pragma once
 
 #include <algorithm>
+#include <set>
+#include <vector>
 
 #include "ChannelSelection.hpp"
 #include "SignalAdapters.hpp"
+
+#include "AudioTraits_FrequencyDomain.hpp"
 
 namespace slb {
 namespace AudioTraits {
@@ -19,6 +23,7 @@ namespace AudioTraits {
 template<typename F, typename ... Is>
 static bool check(const ISignal& signal, const ChannelSelection& channelSelection, Is&& ... traitParams)
 {
+    ASSERT(signal.getNumSamples() > 0);
     std::set<int> selectedChannels = channelSelection.get();
     ASSERT(selectedChannels.size() <= signal.getNumChannels());
     std::for_each(selectedChannels.begin(), selectedChannels.end(), [&signal](auto& i) { ASSERT(i<=signal.getNumChannels()); });
@@ -35,12 +40,12 @@ static bool check(const ISignal& signal, const ChannelSelection& channelSelectio
 }
 
 /** @returns true if a >= b (taking into account tolerance [dB]) */
-bool areVectorsEqual(const std::vector<float>& a, const std::vector<float>& b, float tolerance_dB)
+static inline bool areVectorsEqual(const std::vector<float>& a, const std::vector<float>& b, float tolerance_dB)
 {
     ASSERT(a.size() == b.size(), "Vectors must be of equal length for comparison");
-    return std::equal(a.begin(), a.end(), b.begin(), [&tolerance_dB](float a, float b)
+    return std::equal(a.begin(), a.end(), b.begin(), [&tolerance_dB](float v1, float v2)
     {
-        float error = std::abs(Utils::linear2Db(std::abs(a)) - Utils::linear2Db(std::abs(b)));
+        float error = std::abs(Utils::linear2Db(std::abs(v1)) - Utils::linear2Db(std::abs(v2)));
         return error <= tolerance_dB;
     });
 };
@@ -129,7 +134,6 @@ struct IsDelayedVersionOf
  * sample-by-sample basis.
  *
  * Optionally, error tolerance for the matching can be specified in dB
- *
  */
 struct HasIdenticalChannels
 {
@@ -158,7 +162,6 @@ struct HasIdenticalChannels
  * sample-by-sample basis.
  *
  * Optionally, error tolerance for the matching can be specified in dB
- *
  */
 struct HaveIdenticalChannels
 {
@@ -175,7 +178,6 @@ struct HaveIdenticalChannels
         }
         return true;
     }
-  
 };
 
 } // namespace AudioTraits
