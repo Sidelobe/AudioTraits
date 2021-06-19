@@ -43,9 +43,9 @@ static bool check(const ISignal& signal, const ChannelSelection& channelSelectio
 static inline bool areVectorsEqual(const std::vector<float>& a, const std::vector<float>& b, float tolerance_dB)
 {
     ASSERT(a.size() == b.size(), "Vectors must be of equal length for comparison");
-    return std::equal(a.begin(), a.end(), b.begin(), [&tolerance_dB](float a, float b)
+    return std::equal(a.begin(), a.end(), b.begin(), [&tolerance_dB](float v1, float v2)
     {
-        float error = std::abs(Utils::linear2Db(std::abs(a)) - Utils::linear2Db(std::abs(b)));
+        float error = std::abs(Utils::linear2Db(std::abs(v1)) - Utils::linear2Db(std::abs(v2)));
         return error <= tolerance_dB;
     });
 };

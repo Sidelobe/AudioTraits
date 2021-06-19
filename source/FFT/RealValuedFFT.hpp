@@ -101,7 +101,7 @@ public:
         const int offset = 0;
         
         // Inverse FFT Calculation using N/2 complex IFFT
-        DSPF_sp_ifftSPxSP(N, (float*)&tempComplexBuffer[0], (float*)&m_twiddleTable[0], (float*)&timeDomainBuffer[0],
+        DSPF_sp_ifftSPxSP(N, (float*)&tempComplexBuffer[0], (float*)&m_twiddleTable[0], &timeDomainBuffer[0],
                           (unsigned char*) brev.data(), m_radix, offset, N);
         
         // TODO: make buffers members so there's no allocation
