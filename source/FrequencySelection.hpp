@@ -37,6 +37,7 @@ public:
     
     std::pair<float, float> get() const { return m_range; }
     float size() const { return std::abs(std::get<1>(m_range) - std::get<0>(m_range)); }
+    float centerFrequency() const { return std::get<0>(m_range) + size()/2; }
 
 private:
     std::pair<float, float> m_range;

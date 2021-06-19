@@ -138,5 +138,24 @@ struct HasSignalOnlyInFrequencyRanges
     }
 };
 
+
+/** Can be used as a shorthand */
+struct HasSignalOnlyBelow
+{
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float frequency, float sampleRate, float threshold_dB = -0.5f)
+    {
+        return HasSignalOnlyInFrequencyRanges::eval(signal, selectedChannels, {frequency, sampleRate/2}, sampleRate, threshold_dB);
+    }
+};
+
+/** Can be used as a shorthand */
+struct HasSignalOnlyAbove
+{
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float frequency, float sampleRate, float threshold_dB = -0.5f)
+    {
+        return HasSignalOnlyInFrequencyRanges::eval(signal, selectedChannels, {1, frequency}, sampleRate, threshold_dB);
+    }
+};
+
 } // namespace AudioTraits
 } // namespace slb

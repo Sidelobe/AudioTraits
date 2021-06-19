@@ -19,6 +19,7 @@ using namespace slb;
 using namespace AudioTraits;
 using namespace TestCommon;
 
+
 TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
 {
     float sampleRate = 48e3;
@@ -138,5 +139,18 @@ TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
         }
     }
     
-    // TODO: filtered white noise
+    SECTION("Band-limited Noise (filtered)")
+    {
+        float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
+        
+        auto noiseSignal = SignalGenerator::createBandLimitedNoise<float>(signalLength, FrequencyRange{1000, 4000}, sampleRate, gain_dB);
+        std::vector<std::vector<float>> noiseData {noiseSignal, noiseSignal};
+        SignalAdapterStdVecVec noise(noiseData);
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 4000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{3000, 4000}}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{800, 4000}}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 4500}}, sampleRate));
+//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 3000}}, sampleRate));
+//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1500, 3500}}, sampleRate));
+    }
 }
