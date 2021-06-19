@@ -90,6 +90,11 @@ static inline uint32_t nextPowerOfTwo(uint32_t i)
     return i;
 }
 
+constexpr bool isPowerOfTwo(uint32_t v)
+{
+    return v && ((v & (v - 1)) == 0);
+}
+
 } // namespace Utils
 
 

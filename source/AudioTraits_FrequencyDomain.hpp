@@ -41,9 +41,8 @@ void applyHannWindow(std::vector<T>& channelSignal)
  */
 struct HasSignalOnlyInFrequencyRanges
 {
-    /***/
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, FrequencySelection frequencySelection,
-                     float sampleRate, float threshold_dB = -0.5f, float narrowness_Hz = 10)
+                     float sampleRate, float threshold_dB = -0.5f)
     {
         // TODO: how to analyze frequencies efficiently?
         // zero-pad to a minimum signal length, fixed FFT size
@@ -64,18 +63,23 @@ struct HasSignalOnlyInFrequencyRanges
              plot(freqVec, mag);
          */
         constexpr int fftLength = 4096;
-        ASSERT(Utils::nextPowerOfTwo(fftLength) == fftLength, "FFT has to be power of 2");
+        static_assert(Utils::isPowerOfTwo(fftLength), "FFT has to be power of 2");
         constexpr int numBins = fftLength / 2 + 1;
         RealValuedFFT fft(fftLength);
         
-        // TODO: loop over all ranges -- or create list of 'acceptable' bins
-        std::pair<float, float> firstSelectedRange = *frequencySelection.get().begin();
-        float freqStart = std::get<0>(firstSelectedRange);
-        float freqEnd = std::get<1>(firstSelectedRange);
-        int expectedBinStart = static_cast<int>(std::floor(freqStart / sampleRate * fftLength));
-        int expectedBinEnd = static_cast<int>(std::ceil(freqEnd / sampleRate * fftLength));
-        ASSERT(expectedBinStart >= 0, "invalid frequency range");
-        ASSERT(expectedBinEnd < numBins, "frequency range too high for this sampling rate");
+        // Create list of bins where signal is expected
+        std::set<int> expectedBins;
+        for (auto& frequencyRange : frequencySelection.get()) {
+            float freqStart = std::get<0>(frequencyRange);
+            float freqEnd = std::get<1>(frequencyRange);
+            int expectedBinStart = static_cast<int>(std::floor(freqStart / sampleRate * fftLength));
+            int expectedBinEnd = static_cast<int>(std::ceil(freqEnd / sampleRate * fftLength));
+            ASSERT(expectedBinStart >= 0, "invalid frequency range");
+            ASSERT(expectedBinEnd < numBins, "frequency range too high for this sampling rate");
+            for (int i=expectedBinStart; i <= expectedBinEnd; ++i) {
+                expectedBins.insert(i);
+            }
+        }
         
         for (int chNumber : selectedChannels) {
             std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
@@ -119,17 +123,17 @@ struct HasSignalOnlyInFrequencyRanges
             for (int binIndex = 0; binIndex < numBins; ++binIndex) {
                 float binValue_dB = Utils::linear2Db(accumulatedBins.at(binIndex));
                 if (binValue_dB >= threshold_dB) {
-                    if (binIndex < expectedBinStart || binIndex > expectedBinEnd) {
+                    if (expectedBins.find(binIndex) == expectedBins.end()) {
                         return false; // there's signal in at least one bin outside the selected range
-                    } else {
-                        hasValidSignal = true;
                     }
+                    hasValidSignal = true;
                 }
             }
             if (hasValidSignal == false) {
                 return false; // channel did not have signal in any bin
             }
         }
+            
         return true;
     }
 };

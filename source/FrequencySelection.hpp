@@ -25,7 +25,9 @@ public:
         ASSERT(frequencyComponent > 0 , "invalid frequency component");
     }
     
-    /** Range */
+    /** Range
+     TODO: consider making this explicit -- maybe rename class to something shorter in this case
+     */
     FrequencyRange(float lowerBound, float uppperBound) : m_range{std::make_pair(lowerBound, uppperBound)}
     {
         ASSERT(uppperBound > lowerBound, "invalid range!");

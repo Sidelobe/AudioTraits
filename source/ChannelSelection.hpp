@@ -26,7 +26,9 @@ public:
         ASSERT(channel > 0, "invalid channel!");
     }
     
-    /** Range */
+    /** Range
+     TODO: consider making this explicit -- maybe rename class to something shorter in this case
+     */
     SelectionItem(int first, int last) : m_selection(last - first + 1)
     {
         ASSERT(first > 0 && last >= first, "invalid range!");
