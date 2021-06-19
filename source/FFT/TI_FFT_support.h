@@ -97,7 +97,7 @@ static void FFT_Split (int n, float *pIn, float *pATable, float *pBTable, float 
 
 }
 
-static void IFFT_Split (int n, float *pIn, float *pATable, float *pBTable, float *pOut)
+static void IFFT_Split (int n, const float *pIn, float *pATable, float *pBTable, float *pOut)
 {
     int i;
     float Tr, Ti;

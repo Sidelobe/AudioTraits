@@ -77,12 +77,17 @@ public:
         const int offset = 0;
 
         // Forward FFT Calculation using a N-point complex FFT
-        // TODO: casts
-        DSPF_sp_fftSPxSP(N, (float*)&pseudoComplexInput[0], (float*)&m_twiddleTable[0], (float*)&complexOutput[0],
-                         (unsigned char*) brev.data(), m_radix, offset, N);
+        DSPF_sp_fftSPxSP(N, reinterpret_cast<float*>(pseudoComplexInput.data()),
+                         reinterpret_cast<float*>(m_twiddleTable.data()),
+                         reinterpret_cast<float*>(complexOutput.data()),
+                         const_cast<unsigned char*>(static_cast<const unsigned char*>(brev.data())),
+                         m_radix, offset, N);
 
         std::vector<std::complex<float>> freqDomainBuffer(m_fftLength+1); // entire length +1 required for calculation
-        FFT_Split(N, (float*)&complexOutput[0], (float*)&m_splitTableA[0], (float*)&m_splitTableB[0], (float*)&freqDomainBuffer[0]);
+        FFT_Split(N, reinterpret_cast<float*>(complexOutput.data()),
+                  reinterpret_cast<float*>(m_splitTableA.data()),
+                  reinterpret_cast<float*>(m_splitTableB.data()),
+                  reinterpret_cast<float*>(freqDomainBuffer.data()));
 
         // TODO: make buffers members so there's no allocation
         
@@ -94,15 +99,20 @@ public:
         const int N = m_fftLength / 2;
         std::vector<std::complex<float>> tempComplexBuffer(complexInput.size());
         
-        // TODO: casts
-        IFFT_Split(N, (float*)&complexInput[0], (float*)&m_splitTableA[0], (float*)&m_splitTableB[0], (float*)&tempComplexBuffer[0]);
+        IFFT_Split(N, reinterpret_cast<const float*>(complexInput.data()),
+                   reinterpret_cast<float*>(m_splitTableA.data()),
+                   reinterpret_cast<float*>(m_splitTableB.data()),
+                   reinterpret_cast<float*>(tempComplexBuffer.data()));
         
         std::vector<float> timeDomainBuffer(m_fftLength);
         const int offset = 0;
         
         // Inverse FFT Calculation using N/2 complex IFFT
-        DSPF_sp_ifftSPxSP(N, (float*)&tempComplexBuffer[0], (float*)&m_twiddleTable[0], &timeDomainBuffer[0],
-                          (unsigned char*) brev.data(), m_radix, offset, N);
+        DSPF_sp_ifftSPxSP(N, reinterpret_cast<float*>(tempComplexBuffer.data()),
+                          reinterpret_cast<float*>(m_twiddleTable.data()),
+                          reinterpret_cast<float*>(timeDomainBuffer.data()),
+                          const_cast<unsigned char*>(static_cast<const unsigned char*>(brev.data())),
+                          m_radix, offset, N);
         
         // TODO: make buffers members so there's no allocation
         return timeDomainBuffer;
