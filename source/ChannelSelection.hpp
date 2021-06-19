@@ -9,6 +9,7 @@
 
 #include <set>
 #include <vector>
+#include <numeric>
 #include <utility>
 
 #include "Utils.hpp"

@@ -6,6 +6,8 @@
 //  © 2021 Lorenz Bucher - all rights reserved
 
 #include "TestCommon.hpp"
+#include "SignalGenerator.hpp"
+
 #include <algorithm>
 #include <vector>
 
@@ -22,18 +24,17 @@ TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
     float sampleRate = 48e3;
     
     SECTION("Invalid Parameters") {
-        std::vector<std::vector<float>> emptySignal;
-        SignalAdapterStdVecVec sineGenerated(emptySignal);
-        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(sineGenerated, {1}, FrequencySelection{}, sampleRate));
+        std::vector<std::vector<float>> empty;
+        SignalAdapterStdVecVec emptySignal(empty);
+        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(emptySignal, {1}, FrequencySelection{}, sampleRate));
+        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(emptySignal, {1}, FrequencySelection{}, sampleRate));
     }
     
     SECTION("Sine Wave") {
-    
-        // MARK: Test with generated signals
         float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
         int signalLength = static_cast<int>(sampleRate) * 1;
-        auto sine1kSignal = createSine<float>(1000, sampleRate, signalLength, gain_dB);
-        auto sine2kSignal = createSine<float>(2000, sampleRate, signalLength, gain_dB);
+        auto sine1kSignal = SignalGenerator::createSine<float>(1000, sampleRate, signalLength, gain_dB);
+        auto sine2kSignal = SignalGenerator::createSine<float>(2000, sampleRate, signalLength, gain_dB);
         std::vector<std::vector<float>> sineData {sine1kSignal, sine2kSignal};
         SignalAdapterStdVecVec sineGenerated(sineData);
 
