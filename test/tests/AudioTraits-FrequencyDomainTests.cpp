@@ -15,6 +15,8 @@
 #include "Utils.hpp"
 #include "AudioFileSignalAdapter.hpp"
 
+//#include "matplotlibcpp.h"
+
 using namespace slb;
 using namespace AudioTraits;
 using namespace TestCommon;
@@ -144,13 +146,21 @@ TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
         float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
         
         auto noiseSignal = SignalGenerator::createBandLimitedNoise<float>(signalLength, FrequencyRange{1000, 4000}, sampleRate, gain_dB);
+        
+        for (auto& s: noiseSignal) {
+            //printf("%f, ", s);
+        }
+        //matplotlibcpp::plot(noiseSignal);
+        //matplotlibcpp::show();
+        
         std::vector<std::vector<float>> noiseData {noiseSignal, noiseSignal};
         SignalAdapterStdVecVec noise(noiseData);
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 4000}}, sampleRate));
         REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{3000, 4000}}, sampleRate));
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{800, 4000}}, sampleRate));
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 4500}}, sampleRate));
-//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 3000}}, sampleRate));
-//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1500, 3500}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyAbove>(noise, {}, 2000, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 3000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1500, 3500}}, sampleRate));
     }
 }

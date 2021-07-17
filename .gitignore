@@ -32,3 +32,5 @@
 *.app
 deploy/build
 
+.DS_Store
+build

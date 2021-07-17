@@ -83,7 +83,7 @@ static std::vector<T> createBandLimitedNoise(int length, slb::FrequencyRange ban
         coeffsLP[4] = static_cast<float>((1.f - alpha) / a0);
     }
     
-    auto processBiquad = [](std::vector<T>& audio, float* coeffs, float* states)
+    auto processBiquad = [](std::vector<T>& audio, const float* const coeffs, float* states)
     {
         float* inputs = audio.data();
         float* outputs = audio.data();
@@ -106,9 +106,13 @@ static std::vector<T> createBandLimitedNoise(int length, slb::FrequencyRange ban
     
     float statesHP[4] {0.f};
     processBiquad(noise, coeffsHP, statesHP);
+    processBiquad(noise, coeffsHP, statesHP);    
     processBiquad(noise, coeffsHP, statesHP);
-    
+    processBiquad(noise, coeffsHP, statesHP);
+
     float statesLP[4] {0.f};
+    processBiquad(noise, coeffsLP, statesLP);
+    processBiquad(noise, coeffsLP, statesLP);
     processBiquad(noise, coeffsLP, statesLP);
     processBiquad(noise, coeffsLP, statesLP);
 
