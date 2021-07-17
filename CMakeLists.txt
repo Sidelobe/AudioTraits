@@ -86,7 +86,19 @@ add_subdirectory(test/external-utils/MemorySentinel)
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/MemorySentinel/source)
 target_link_libraries(${TEST_NAME} PRIVATE MemorySentinel)
 
+# AudioFile
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/AudioFile)
+
+# Add matplotlib-cpp
+option(MATPLOTLIB "Enable matplotlib-cpp" false)
+if (MATPLOTLIB)
+  message(STATUS "Matplotlib enabled")
+  target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/matplotlib-cpp)
+  set(Python3_EXECUTABLE /usr/local/bin/python3)
+  find_package(Python3 COMPONENTS Development NumPy REQUIRED)
+  target_include_directories(${TEST_NAME} PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
+  target_link_libraries(${TEST_NAME} PRIVATE Python3::Python Python3::NumPy)
+endif()
 
 # Compiler Settings
 target_compile_options(${TEST_NAME} PRIVATE
