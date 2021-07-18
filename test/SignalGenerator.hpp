@@ -53,15 +53,15 @@ static std::vector<T> createBandLimitedNoise(int length, slb::FrequencyRange ban
     std::vector<T> noise = createWhiteNoise(length, gain_dB, seed);
 
     ASSERT(sampleRate > 0);
-    const double Q = M_SQRT1_2;
     
     float coeffsHP[5];
     {
+        constexpr double Q = M_SQRT1_2;
         double frequency = std::get<0>(band.get());
         double w0 = 2 * M_PI * frequency / sampleRate;
         double alpha  = std::sin(w0) / (2*Q);
         double cosine  = std::cos(w0);
-        double a0 =  1.f + alpha;
+        double a0 =  1.0 + alpha;
         coeffsHP[0] = static_cast<float>((1.f + cosine) / 2.f / a0);
         coeffsHP[1] = static_cast<float>((-1.f - cosine) / a0);
         coeffsHP[2] = coeffsHP[0];
@@ -71,11 +71,12 @@ static std::vector<T> createBandLimitedNoise(int length, slb::FrequencyRange ban
 
     float coeffsLP[5];
     {
+        constexpr double Q = M_SQRT1_2;
         double frequency = std::get<1>(band.get());
         double w0 = 2 * M_PI * frequency / sampleRate;
         double alpha  = std::sin(w0) / (2*Q);
         double cosine  = std::cos(w0);
-        double a0 =  1.f + alpha;
+        double a0 =  1.0 + alpha;
         coeffsLP[0] = static_cast<float>((1.f - cosine) / 2.f / a0);
         coeffsLP[1] = static_cast<float>((1.f - cosine) / a0);
         coeffsLP[2] = coeffsLP[0];
