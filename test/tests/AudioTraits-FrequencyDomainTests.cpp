@@ -22,9 +22,9 @@ using namespace AudioTraits;
 using namespace TestCommon;
 
 
-TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
+TEST_CASE("AudioTraits::HasSignalInFrequencyRanges and HasSignalOnlyInFrequencyRanges tests")
 {
-    float sampleRate = 48e3;
+    float sampleRate = 48e3f;
     int signalLength = static_cast<int>(sampleRate) * 1;
     
     SECTION("Invalid Parameters") {
@@ -34,16 +34,27 @@ TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
         REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(emptySignal, {}, FrequencySelection{}, sampleRate));
         
         std::vector<std::vector<float>> minimal(1, std::vector<float>(1));
-        SignalAdapterStdVecVec minimalSignal(minimal);
-        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(minimalSignal, {1}, FrequencySelection{0}, sampleRate)); // DC is not valid
-        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(minimalSignal, {1}, FrequencySelection{-10}, sampleRate)); // negative frequency is not valid
-        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(minimalSignal, {1}, FrequencySelection{{-10, 200}}, sampleRate)); // range that starts in negative is also invalid
-        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(minimalSignal, {1}, FrequencySelection{sampleRate/2+1}, sampleRate)); // above Nyquist is invalid
-        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minimalSignal, {1}, FrequencySelection{1}, sampleRate)); // 1Hz is ok
-        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minimalSignal, {1}, FrequencySelection{sampleRate/2}, sampleRate)); // Nyquist is ok
-        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minimalSignal, {1}, FrequencySelection{}, sampleRate)); // no frequency is always false
-        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minimalSignal, {1}, FrequencySelection{1000}, sampleRate));
-        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minimalSignal, {}, FrequencySelection{1000}, sampleRate));
+        SignalAdapterStdVecVec minSig(minimal);
+        
+        REQUIRE_THROWS(check<HasSignalInFrequencyRanges>(minSig, {1}, FrequencySelection{0}, sampleRate)); // DC is not valid
+        REQUIRE_THROWS(check<HasSignalInFrequencyRanges>(minSig, {1}, FrequencySelection{-10}, sampleRate)); // negative frequency is not valid
+        REQUIRE_THROWS(check<HasSignalInFrequencyRanges>(minSig, {1}, FrequencySelection{{-10, 200}}, sampleRate)); // range that starts in negative is also invalid
+        REQUIRE_THROWS(check<HasSignalInFrequencyRanges>(minSig, {1}, FrequencySelection{sampleRate/2+1}, sampleRate)); // above Nyquist is invalid
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(minSig, {1}, FrequencySelection{1}, sampleRate)); // 1Hz is ok
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(minSig, {1}, FrequencySelection{sampleRate/2}, sampleRate)); // Nyquist is ok
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(minSig, {1}, FrequencySelection{}, sampleRate)); // no frequency is always false
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(minSig, {1}, FrequencySelection{1000}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(minSig, {}, FrequencySelection{1000}, sampleRate));
+        
+        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(minSig, {1}, FrequencySelection{0}, sampleRate)); // DC is not valid
+        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(minSig, {1}, FrequencySelection{-10}, sampleRate)); // negative frequency is not valid
+        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(minSig, {1}, FrequencySelection{{-10, 200}}, sampleRate)); // range that starts in negative is also invalid
+        REQUIRE_THROWS(check<HasSignalOnlyInFrequencyRanges>(minSig, {1}, FrequencySelection{sampleRate/2+1}, sampleRate)); // above Nyquist is invalid
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minSig, {1}, FrequencySelection{1}, sampleRate)); // 1Hz is ok
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minSig, {1}, FrequencySelection{sampleRate/2}, sampleRate)); // Nyquist is ok
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minSig, {1}, FrequencySelection{}, sampleRate)); // no frequency is always false
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minSig, {1}, FrequencySelection{1000}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(minSig, {}, FrequencySelection{1000}, sampleRate));
     }
     
     SECTION("Silence") {
@@ -52,6 +63,12 @@ TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
         SignalAdapterStdVecVec silenceSignal(silenceData);
         
         // check always has to return false
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(silenceSignal, {}, FrequencySelection{1000}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(silenceSignal, {1}, FrequencySelection{1000}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(silenceSignal, {2}, FrequencySelection{1000}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(silenceSignal, {2}, FrequencySelection{1}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(silenceSignal, {2}, FrequencySelection{sampleRate/2}, sampleRate));
+        
         REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(silenceSignal, {}, FrequencySelection{1000}, sampleRate));
         REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(silenceSignal, {1}, FrequencySelection{1000}, sampleRate));
         REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(silenceSignal, {2}, FrequencySelection{1000}, sampleRate));
@@ -67,6 +84,7 @@ TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
         std::vector<std::vector<float>> sineData {sine1kSignal, sine2kSignal, sine6kSignal};
         SignalAdapterStdVecVec sine(sineData);
 
+        REQUIRE(sampleRate == 48000);
         // Single Frequency Ranges
         // 1kHz sine
         REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{}, sampleRate)); // no frequency is always false
@@ -120,18 +138,35 @@ TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
             auto noiseSignal = SignalGenerator::createWhiteNoise(signalLength);
             std::vector<std::vector<float>> longNoiseData {noiseSignal, noiseSignal};
             SignalAdapterStdVecVec longNoise(longNoiseData);
+            
+            REQUIRE_FALSE(check<HasSignalInFrequencyRanges>(longNoise, {}, FrequencySelection{{1, sampleRate/2}}, sampleRate));
+
             // second bin at 2*ceil(48000/4096)=24Hz
+            REQUIRE(sampleRate == 48000);
             REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(longNoise, {}, FrequencySelection{{24, sampleRate/2}}, sampleRate));
         }
         
         SECTION("Normal cases") {
             float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
+            signalLength = static_cast<int>(sampleRate) * 10; // need longer signal
             auto noiseSignal = SignalGenerator::createWhiteNoise(signalLength, gain_dB);
             std::vector<std::vector<float>> noiseData {noiseSignal};
             SignalAdapterStdVecVec noise(noiseData);
             
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1, sampleRate/2}}, sampleRate)); // maximum possible frequency range
-
+            // lower threshold because signal is no long enough
+            float threshold = -3.f;
+            
+            // maximum possible frequency range
+            REQUIRE(check<HasSignalInFrequencyRanges>(noise, {}, FrequencySelection{{1, sampleRate/2}}, sampleRate, threshold));
+            // Other than the case above, white noise should always result in true checks
+            REQUIRE(check<HasSignalInFrequencyRanges>(noise, {}, FrequencySelection{1000}, sampleRate, threshold));
+            REQUIRE(check<HasSignalInFrequencyRanges>(noise, {}, FrequencySelection{10000}, sampleRate, threshold));
+            REQUIRE(check<HasSignalInFrequencyRanges>(noise, {}, FrequencySelection{100}, sampleRate, threshold));
+            REQUIRE(check<HasSignalInFrequencyRanges>(noise, {}, FrequencySelection{sampleRate/2}, sampleRate, threshold));
+            REQUIRE(check<HasSignalInFrequencyRanges>(noise, {}, FrequencySelection{{1000, sampleRate/2}}, sampleRate, threshold));
+            
+            // maximum possible frequency range
+            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1, sampleRate/2}}, sampleRate));
             // Other than the case above, white noise should always result in false checks
             REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{1000}, sampleRate));
             REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{10000}, sampleRate));
@@ -143,24 +178,39 @@ TEST_CASE("AudioTraits::HasSignalOnlyInFrequencyRanges tests")
     
     SECTION("Band-limited Noise (filtered)")
     {
-        float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
+        float gain_dB = 0.f;//GENERATE(0.f, +3.f, -3.f, -50.f);
+        float lowerFreq = 1000;
+        float upperFreq = 4000;
+        REQUIRE(upperFreq-lowerFreq > 100); // test build on this
+        float centerPoint = lowerFreq + (upperFreq-lowerFreq)/2;
+        auto noiseSignal = SignalGenerator::createBandLimitedNoise<float>(signalLength, FrequencyRange{lowerFreq, upperFreq}, sampleRate, gain_dB);
         
-        auto noiseSignal = SignalGenerator::createBandLimitedNoise<float>(signalLength, FrequencyRange{1000, 4000}, sampleRate, gain_dB);
+        AudioFile<float> file;
+        std::vector<std::vector<float>> buffer({noiseSignal});
+        file.setAudioBuffer(buffer);
         
-        for (auto& s: noiseSignal) {
-            //printf("%f, ", s);
-        }
-        //matplotlibcpp::plot(noiseSignal);
-        //matplotlibcpp::show();
+       // file.save("bandlimitedNoise.wav");
+
+//        for (auto& s: noiseSignal) {
+//            printf("%f, ", s);
+//        }
+//        matplotlibcpp::plot(noiseSignal);
+//        matplotlibcpp::show();
         
         std::vector<std::vector<float>> noiseData {noiseSignal, noiseSignal};
         SignalAdapterStdVecVec noise(noiseData);
-        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 4000}}, sampleRate));
-        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{3000, 4000}}, sampleRate));
-        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{800, 4000}}, sampleRate));
-        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 4500}}, sampleRate));
-        REQUIRE_FALSE(check<HasSignalOnlyAbove>(noise, {}, 2000, sampleRate));
-        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1000, 3000}}, sampleRate));
-        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{1500, 3500}}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyAbove>(noise, {}, centerPoint, sampleRate));
+        REQUIRE(check<HasSignalOnlyAbove>(noise, {}, lowerFreq, sampleRate));
+        REQUIRE(check<HasSignalOnlyBelow>(noise, {}, upperFreq, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*.8f, upperFreq*1.5f}}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*0.9f, upperFreq}}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq*1.1f}}, sampleRate));
+        
+//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*1.2f, upperFreq}}, sampleRate));
+//        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*1.05f, upperFreq}}, sampleRate));
+//
+//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq*0.9f}}, sampleRate));
+//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*1.1f, upperFreq*0.9f}}, sampleRate));
     }
 }
