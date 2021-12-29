@@ -54,7 +54,8 @@ inline std::set<int> determineCorrespondingBins(const FrequencySelection& freque
     return bins;
 }
 
-inline std::vector<float> getNormalizedFrequencyBins(std::vector<float>& channelSignal)
+/** @returns the absolute values of the bin contents for a given signal, normalized to the highest-valued bin */
+inline std::vector<float> getNormalizedBinValues(std::vector<float>& channelSignal)
 {
     // zero-pad to a minimum signal length, fixed FFT size
     // need windowing between the calls? (apply before zero-padding
@@ -99,8 +100,9 @@ inline std::vector<float> getNormalizedFrequencyBins(std::vector<float>& channel
         
         // accumulate: accumulatedBins += binValues
         ASSERT(binValuesForChunk.size() == accumulatedBins.size());
-        std::transform(accumulatedBins.begin(), accumulatedBins.end(), binValuesForChunk.begin(),
-                       accumulatedBins.begin(), std::plus<float>());
+        for (int k=0; k < accumulatedBins.size(); ++k) {
+            accumulatedBins[k] += binValuesForChunk[k];
+        }
     }
     
     // normally, we would normalize then bin values with numChunks and fftLength, but here

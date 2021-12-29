@@ -39,7 +39,7 @@ struct HasSignalInFrequencyRanges
         
         for (int chNumber : selectedChannels) {
             std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
-            std::vector<float> normalizedBins = FrequencyDomainHelpers::getNormalizedFrequencyBins(channelSignal);
+            std::vector<float> normalizedBins = FrequencyDomainHelpers::getNormalizedBinValues(channelSignal);
             
             float min = *std::min_element(normalizedBins.begin(), normalizedBins.end());
             bool hasValidSignal = false;
@@ -79,7 +79,7 @@ struct HasSignalOnlyInFrequencyRanges
         
         for (int chNumber : selectedChannels) {
             std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
-            std::vector<float> normalizedBins = FrequencyDomainHelpers::getNormalizedFrequencyBins(channelSignal);
+            std::vector<float> normalizedBins = FrequencyDomainHelpers::getNormalizedBinValues(channelSignal);
         
             bool hasValidSignal = false;
             for (int binIndex = 0; binIndex < FrequencyDomainHelpers::numBins; ++binIndex) {
