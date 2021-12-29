@@ -178,39 +178,31 @@ TEST_CASE("AudioTraits::HasSignalInFrequencyRanges and HasSignalOnlyInFrequencyR
     
     SECTION("Band-limited Noise (filtered)")
     {
-        float gain_dB = 0.f;//GENERATE(0.f, +3.f, -3.f, -50.f);
-        float lowerFreq = 1000;
-        float upperFreq = 4000;
-        REQUIRE(upperFreq-lowerFreq > 100); // test build on this
-        float centerPoint = lowerFreq + (upperFreq-lowerFreq)/2;
-        auto noiseSignal = SignalGenerator::createBandLimitedNoise<float>(signalLength, FrequencyRange{lowerFreq, upperFreq}, sampleRate, gain_dB);
-        
-        AudioFile<float> file;
-        std::vector<std::vector<float>> buffer({noiseSignal});
-        file.setAudioBuffer(buffer);
-        
-       // file.save("bandlimitedNoise.wav");
+        AudioFile<float> bandlimitedNoise(std::string(TOSTRING(SOURCE_DIR)) + "/test/test_data/BandLimitedNoise_1k_4k.wav");
+        ASSERT(bandlimitedNoise.getSampleRate() == sampleRate);
 
-//        for (auto& s: noiseSignal) {
-//            printf("%f, ", s);
-//        }
-//        matplotlibcpp::plot(noiseSignal);
-//        matplotlibcpp::show();
+        const float gain_dB = 0.f;//GENERATE(0.f, +3.f, -3.f, -50.f);
+        constexpr float lowerFreq = 1000;
+        constexpr float upperFreq = 4000;
+        REQUIRE(upperFreq-lowerFreq > 100); // test build on this
+        constexpr float centerPoint = lowerFreq + (upperFreq-lowerFreq)/2;
         
-        std::vector<std::vector<float>> noiseData {noiseSignal, noiseSignal};
-        SignalAdapterStdVecVec noise(noiseData);
+        SignalAdapterStdVecVec noise(bandlimitedNoise.samples);
+
+        REQUIRE(check<HasSignalInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq}}, sampleRate, -12.0f));
+        
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq}}, sampleRate));
         REQUIRE_FALSE(check<HasSignalOnlyAbove>(noise, {}, centerPoint, sampleRate));
         REQUIRE(check<HasSignalOnlyAbove>(noise, {}, lowerFreq, sampleRate));
         REQUIRE(check<HasSignalOnlyBelow>(noise, {}, upperFreq, sampleRate));
-        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*.8f, upperFreq*1.5f}}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*0.8f, upperFreq*1.5f}}, sampleRate));
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*0.9f, upperFreq}}, sampleRate));
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq*1.1f}}, sampleRate));
         
-//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*1.2f, upperFreq}}, sampleRate));
-//        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*1.05f, upperFreq}}, sampleRate));
-//
-//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq*0.9f}}, sampleRate));
-//        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*1.1f, upperFreq*0.9f}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*1.1f, upperFreq}}, sampleRate, -6));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*1.001f, upperFreq}}, sampleRate, -6));
+
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq*0.9f}}, sampleRate, -6));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq*1.1f, upperFreq*0.9f}}, sampleRate, -6));
     }
 }
