@@ -24,7 +24,7 @@ using namespace TestCommon;
 
 TEST_CASE("AudioTraits::FrequencyDomain: basic tests")
 {
-    float sampleRate = 48e3f;
+    constexpr float sampleRate = 48e3f;
     int signalLength = static_cast<int>(sampleRate) * 1;
     
     SECTION("Invalid Parameters") {
@@ -82,7 +82,7 @@ TEST_CASE("AudioTraits::FrequencyDomain: basic tests")
 
 TEST_CASE("AudioTraits::FrequencyDomain: sine tests")
 {
-    float sampleRate = 48e3f;
+    constexpr float sampleRate = 48e3f;
     int signalLength = static_cast<int>(sampleRate) * 1;
     
     float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
@@ -156,7 +156,7 @@ TEST_CASE("AudioTraits::FrequencyDomain: sine tests")
 
 TEST_CASE("AudioTraits::FrequencyDomain: multi-sine tests")
 {
-    float sampleRate = 48e3f;
+    constexpr float sampleRate = 48e3f;
     int signalLength = static_cast<int>(sampleRate) * 1;
     
     SECTION("Summed Sine Waves in a Channel") {
@@ -214,7 +214,7 @@ TEST_CASE("AudioTraits::FrequencyDomain: multi-sine tests")
     
 TEST_CASE("AudioTraits::FrequencyDomain: noise tests")
 {
-    float sampleRate = 48e3f;
+    constexpr float sampleRate = 48e3f;
     SECTION("White Noise (unfiltered)") {
         // Extreme case (Ultra-low frequency, very long signal)
         {
