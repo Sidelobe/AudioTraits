@@ -182,8 +182,10 @@ TEST_CASE("AudioTraits::FrequencyDomain: multi-sine tests")
         REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1050,1100},{2000}}, sampleRate));
     }
     SECTION("Summed Sines with different amplitudes") {
+        float thrs = GENERATE(-1.f, -10.f, -40.f); //dB
+        
         auto sine1kSignal = SignalGenerator::createSine<float>(1000, sampleRate, signalLength, 0.f);
-        auto sine2kSignal = SignalGenerator::createSine<float>(2000, sampleRate, signalLength, -40.f);
+        auto sine2kSignal = SignalGenerator::createSine<float>(2000, sampleRate, signalLength, thrs+0.1f); // just above the threshold
         
         std::vector<float> sine1k2kSignal(signalLength);
         for (int i=0; i < signalLength; ++i) {
@@ -192,15 +194,20 @@ TEST_CASE("AudioTraits::FrequencyDomain: multi-sine tests")
         std::vector<std::vector<float>> sinesData {sine1k2kSignal};
         SignalAdapterStdVecVec sines(sinesData);
         
-        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1000},{2000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1000},{2000}}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1000},{2000}}, sampleRate, thrs));
         REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1000}}, sampleRate));
-        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{2000}}, sampleRate));
-        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{900,1100},{1800,2200}}, sampleRate));
-        REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1050,1100},{2000}}, sampleRate)); // 1k is no longer in range
+        REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{2000}}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{2000}}, sampleRate, thrs));
 
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1000},{2000}}, sampleRate));
-        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1000}}, sampleRate));
+        if (thrs > -20.f) { // for lower thresholds, noise gets too high
+            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1000},{2000}}, sampleRate, thrs));
+        }
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1000}}, sampleRate, thrs));
         REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{2000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{2000}}, sampleRate, thrs)); // still fale because of the 1k signal
         REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1050,1100},{2000}}, sampleRate));
     }
 }
