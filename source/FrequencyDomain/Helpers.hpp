@@ -36,7 +36,7 @@ inline void applyHannWindow(std::vector<T>& channelSignal)
 }
 
 /** Create list of bins that correspond to one FrequencyRange */
-inline std::set<int> determineCorrespondingBins(const FrequencyRange& frequencyRange, float sampleRate)
+inline std::set<int> determineCorrespondingBins(const FreqBand& frequencyRange, float sampleRate)
 {
     std::set<int> bins;
     

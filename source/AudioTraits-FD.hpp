@@ -116,7 +116,7 @@ struct HasSignalOnlyBelow
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float frequency, float sampleRate, float threshold_dB = -0.5f)
     {
-        return HasSignalOnlyInFrequencyRanges::eval(signal, selectedChannels, {FrequencyRange{1, frequency}}, sampleRate, threshold_dB);
+        return HasSignalOnlyInFrequencyRanges::eval(signal, selectedChannels, {FreqBand{1, frequency}}, sampleRate, threshold_dB);
     }
 };
 
@@ -125,7 +125,7 @@ struct HasSignalOnlyAbove
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float frequency, float sampleRate, float threshold_dB = -0.5f)
     {
-        return HasSignalOnlyInFrequencyRanges::eval(signal, selectedChannels, {FrequencyRange{frequency, sampleRate/2}}, sampleRate, threshold_dB);
+        return HasSignalOnlyInFrequencyRanges::eval(signal, selectedChannels, {FreqBand{frequency, sampleRate/2}}, sampleRate, threshold_dB);
     }
 };
 

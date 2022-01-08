@@ -16,21 +16,22 @@
 namespace slb
 {
 
-class FrequencyRange
+class FreqBand
 {
 public:
     using Bounds = std::pair<float, float>;
     
     /** Discrete component (deliberately non-explicit ctor) */
-    FrequencyRange(float frequencyComponent) : m_range{std::make_pair(frequencyComponent, frequencyComponent)}
+    FreqBand(float frequencyComponent) : m_range{std::make_pair(frequencyComponent, frequencyComponent)}
     {
         ASSERT(frequencyComponent > 0 , "invalid frequency component");
     }
     
-    /** Range
-     TODO: consider making this explicit -- maybe rename class to something shorter in this case
+    /**
+     * Range of frequencies
+     * TODO: consider making this explicit -- maybe rename class to something shorter in this case
      */
-    FrequencyRange(float lowerBound, float uppperBound) : m_range{std::make_pair(lowerBound, uppperBound)}
+    FreqBand(float lowerBound, float uppperBound) : m_range{std::make_pair(lowerBound, uppperBound)}
     {
         ASSERT(uppperBound > lowerBound, "invalid range!");
         ASSERT(lowerBound > 0, "invalid lower bound!");
@@ -49,12 +50,12 @@ private:
 class FrequencySelection
 {
 public:
-    FrequencySelection(std::initializer_list<FrequencyRange> selectedRanges) : m_selectedRanges(selectedRanges) {}
+    FrequencySelection(std::initializer_list<FreqBand> selectedRanges) : m_selectedRanges(selectedRanges) {}
     
     /** @return a duplicate-free list of FrequencyRange Bound pairs contained in the selection */
-    std::set<FrequencyRange::Bounds> getBounds() const
+    std::set<FreqBand::Bounds> getBounds() const
     {
-        std::set<FrequencyRange::Bounds> result;
+        std::set<FreqBand::Bounds> result;
         for (auto& item : m_selectedRanges) {
             result.insert(item.get());
         }
@@ -62,13 +63,13 @@ public:
     }
     
     /** @return a copy of all the FrequencyRanges in the selection */
-    std::vector<FrequencyRange> getRanges() const
+    std::vector<FreqBand> getRanges() const
     {
         return m_selectedRanges;
     }
     
 private:
-    std::vector<FrequencyRange> m_selectedRanges;
+    std::vector<FreqBand> m_selectedRanges;
 
 };
 

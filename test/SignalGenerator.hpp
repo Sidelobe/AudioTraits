@@ -50,7 +50,7 @@ static std::vector<T> createWhiteNoise(int length, float gain_dB = 0.0, int seed
 
 /** Creates noise restricted to a certain frequency band. The filtering happens with a 4th-order filter (24dB/octave slope) */
 template<typename T>
-static std::vector<T> createBandLimitedNoise(int length, slb::FrequencyRange band, float sampleRate, float gain_dB = 0.0, int seed=0)
+static std::vector<T> createBandLimitedNoise(int length, slb::FreqBand band, float sampleRate, float gain_dB = 0.0, int seed=0)
 {
     // TODO: Implement this cleanly. overlapp-add ?
     ASSERT_ALWAYS("NOT YET IMPLEMENTED");

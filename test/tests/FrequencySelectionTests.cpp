@@ -13,22 +13,22 @@ using namespace slb;
 
 TEST_CASE("FrequencyRange Tests")
 {
-    REQUIRE_NOTHROW(FrequencyRange(1000));
-    REQUIRE_NOTHROW(FrequencyRange{1000});
-    REQUIRE_NOTHROW(FrequencyRange(24000));
-    REQUIRE_NOTHROW(FrequencyRange(1e10)); // upper bound depends on sampling rate
-    REQUIRE_THROWS(FrequencyRange(0));
-    REQUIRE_THROWS(FrequencyRange(-10));
+    REQUIRE_NOTHROW(FreqBand(1000));
+    REQUIRE_NOTHROW(FreqBand{1000});
+    REQUIRE_NOTHROW(FreqBand(24000));
+    REQUIRE_NOTHROW(FreqBand(1e10)); // upper bound depends on sampling rate
+    REQUIRE_THROWS(FreqBand(0));
+    REQUIRE_THROWS(FreqBand(-10));
 
-    REQUIRE_NOTHROW(FrequencyRange(1000, 1001));
-    REQUIRE_NOTHROW(FrequencyRange{1000, 1001});
-    REQUIRE_NOTHROW(FrequencyRange(20, 10000));
+    REQUIRE_NOTHROW(FreqBand(1000, 1001));
+    REQUIRE_NOTHROW(FreqBand{1000, 1001});
+    REQUIRE_NOTHROW(FreqBand(20, 10000));
     
-    REQUIRE_THROWS(FrequencyRange(800, 800)); // use single argument ctor for this
-    REQUIRE_THROWS(FrequencyRange(1000, 800));
-    REQUIRE_THROWS(FrequencyRange(-1, 0));
-    REQUIRE_THROWS(FrequencyRange(-100, -10));
-    REQUIRE_THROWS(FrequencyRange(0, 0));
+    REQUIRE_THROWS(FreqBand(800, 800)); // use single argument ctor for this
+    REQUIRE_THROWS(FreqBand(1000, 800));
+    REQUIRE_THROWS(FreqBand(-1, 0));
+    REQUIRE_THROWS(FreqBand(-100, -10));
+    REQUIRE_THROWS(FreqBand(0, 0));
 }
 
 TEST_CASE("FrequencySelection Tests")
