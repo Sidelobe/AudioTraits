@@ -34,7 +34,7 @@ namespace AudioTraits {
  */
 struct HasSignalInAllFrequencyRanges
 {
-    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const FrequencySelection& frequencySelection,
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const Freqs& frequencySelection,
                      float sampleRate, float threshold_dB = -0.5f)
     {
         if (frequencySelection.getRanges().empty()) {
@@ -82,7 +82,7 @@ struct HasSignalInAllFrequencyRanges
  */
 struct HasSignalOnlyInFrequencyRanges
 {
-    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const FrequencySelection& frequencySelection,
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const Freqs& frequencySelection,
                      float sampleRate, float threshold_dB = -0.5f)
     {
         // We only need to scan 'illegal' ranges for content. If these are clean, the trait is true.

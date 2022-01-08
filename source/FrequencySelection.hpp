@@ -47,10 +47,10 @@ private:
 };
 
 
-class FrequencySelection
+class Freqs
 {
 public:
-    FrequencySelection(std::initializer_list<FreqBand> selectedRanges) : m_selectedRanges(selectedRanges) {}
+    Freqs(std::initializer_list<FreqBand> selectedRanges) : m_selectedRanges(selectedRanges) {}
     
     /** @return a duplicate-free list of FrequencyRange Bound pairs contained in the selection */
     std::set<FreqBand::Bounds> getBounds() const

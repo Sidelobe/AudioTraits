@@ -53,8 +53,8 @@ inline std::set<int> determineCorrespondingBins(const FreqBand& frequencyRange, 
     return bins;
 }
 
-/** Create an aggregated list of bins that correspond to all in ranges in the FrequencySelection */
-inline std::set<int> determineCorrespondingBins(const FrequencySelection& frequencySelection, float sampleRate)
+/** Create an aggregated list of bins that correspond to all in bands in the selection */
+inline std::set<int> determineCorrespondingBins(const Freqs& frequencySelection, float sampleRate)
 {
     std::set<int> bins;
     
