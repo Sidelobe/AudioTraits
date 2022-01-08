@@ -50,7 +50,7 @@ REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{100, 200}, sampleRate, -30d
 // signal only has content above -5dB in the band 20-5000 Hz (relative to the spectral maximum)
 REQUIRE(check<HasSignalOnlyInBands>(signal, {}, Freqs{20, 5000}, sampleRate, -5dB));
 // signal only has content below 4kHz in all channels
-REQUIRE(check<HasSignalOnlyBelow	>(signal, {}, 4000, sampleRate));
+REQUIRE(check<HasSignalOnlyBelow>(signal, {}, 4000, sampleRate));
 
 ```
 
