@@ -24,15 +24,15 @@ namespace AudioTraits {
 // MARK: - Frequency Domain Audio Traits
 
 /**
- * Evaluates if all the selected channels have frequency content in all the specified ranges.
- * The spectral content outside the specified ranges is not analyzed.
+ * Evaluates if all the selected channels have frequency content in all the specified bands.
+ * The spectral content outside the specified bands is not analyzed.
  *
  * To count as 'there is frequency content', it needs to be above a certain threshold in dB in at least one of the bins
- * in that range. The threshold is relative to the maximum bin value of all bins, across the entire spectrum.
+ * in that band. The threshold is relative to the maximum bin value of all bins, across the entire spectrum.
  *
  * TODO: add option to re-use 'cache' the FFT results instead of recalculating every time.
  */
-struct HasSignalInAllFrequencyRanges
+struct HasSignalInAllBands
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const Freqs& frequencySelection,
                      float sampleRate, float threshold_dB = -0.5f)
@@ -41,7 +41,7 @@ struct HasSignalInAllFrequencyRanges
             return false; // Empty frequency selection is always false
         }
         
-        // Each frequency range needs to be tested individually
+        // Each frequency band needs to be tested individually
         for (const auto& frequencyRange : frequencySelection.getRanges()) {
             // Determine bins where signal is expected
             std::set<int> expectedBins = FrequencyDomainHelpers::determineCorrespondingBins(frequencyRange, sampleRate);
@@ -55,11 +55,11 @@ struct HasSignalInAllFrequencyRanges
                     float binValue_dB = Utils::linear2Db(normalizedBinValues.at(expectedBin));
                     if (binValue_dB >= threshold_dB) {
                         hasValidSignalInThisRange = true;
-                        break; // at least one of the bins in this range has signal, skip the remaining bins in this range.
+                        break; // at least one of the bins in this band has signal, skip the remaining bins in this band.
                     }
                 }
                 if (hasValidSignalInThisRange == false) {
-                    return false; // channel did not have signal in any bin in this range
+                    return false; // channel did not have signal in any bin in this band
                 }
             }
         }
@@ -69,23 +69,23 @@ struct HasSignalInAllFrequencyRanges
 };
 
 /**
- * Evaluates if all the selected channels have frequency content in all the specified ranges only, and none in the
- * rest of the spectrum. Note that the signal *can* have content in the specifide ranges, but does not necessarily have
+ * Evaluates if all the selected channels have frequency content in all the specified bands only, and none in the
+ * rest of the spectrum. Note that the signal *can* have content in the specifide bands, but does not necessarily have
  * to for this trait to be true.
  *
  * To count as 'there is frequency content', it needs to be above a certain threshold in dB in at least one of the bins
- * in that range. The threshold is relative to the maximum bin value of all bins, across the entire spectrum.
+ * in that band. The threshold is relative to the maximum bin value of all bins, across the entire spectrum.
  *
- * If any FFT bins (that are not part of the selected frequency ranges) reach the threshold, the result will be 'false'.
+ * If any FFT bins (that are not part of the selected frequency bands) reach the threshold, the result will be 'false'.
  *
  * TODO: add option to re-use 'cache' the FFT results instead of recalculating every time.
  */
-struct HasSignalOnlyInFrequencyRanges
+struct HasSignalOnlyInBands
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const Freqs& frequencySelection,
                      float sampleRate, float threshold_dB = -0.5f)
     {
-        // We only need to scan 'illegal' ranges for content. If these are clean, the trait is true.
+        // We only need to scan 'illegal' bands for content. If these are clean, the trait is true.
         // Determine bins where signal is allowed
         std::set<int> legalBins = FrequencyDomainHelpers::determineCorrespondingBins(frequencySelection, sampleRate);
         
@@ -99,7 +99,7 @@ struct HasSignalOnlyInFrequencyRanges
                     // there's content in this bin -- is this bin 'legal' ?
                     // TODO: optimization -- change this to a vector<bool> or something (direct access rather than find)
                     if (legalBins.find(binIndex) == legalBins.end()) {
-                        // this bin is not legal -> there's signal in at least one bin outside the legal ranges
+                        // this bin is not legal -> there's signal in at least one bin outside the legal bands
                         return false;
                     }
                 }
@@ -116,7 +116,7 @@ struct HasSignalOnlyBelow
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float frequency, float sampleRate, float threshold_dB = -0.5f)
     {
-        return HasSignalOnlyInFrequencyRanges::eval(signal, selectedChannels, {FreqBand{1, frequency}}, sampleRate, threshold_dB);
+        return HasSignalOnlyInBands::eval(signal, selectedChannels, {FreqBand{1, frequency}}, sampleRate, threshold_dB);
     }
 };
 
@@ -125,7 +125,7 @@ struct HasSignalOnlyAbove
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float frequency, float sampleRate, float threshold_dB = -0.5f)
     {
-        return HasSignalOnlyInFrequencyRanges::eval(signal, selectedChannels, {FreqBand{frequency, sampleRate/2}}, sampleRate, threshold_dB);
+        return HasSignalOnlyInBands::eval(signal, selectedChannels, {FreqBand{frequency, sampleRate/2}}, sampleRate, threshold_dB);
     }
 };
 
