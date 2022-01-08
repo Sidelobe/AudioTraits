@@ -70,8 +70,8 @@ struct HasSignalInAllBands
 
 /**
  * Evaluates if all the selected channels have frequency content in all the specified bands only, and none in the
- * rest of the spectrum. Note that the signal *can* have content in the specifide bands, but does not necessarily have
- * to for this trait to be true.
+ * rest of the spectrum. Note that the signal *can* have content in the specified bands, but does not necessarily *have
+ * to* for this trait to be true.
  *
  * To count as 'there is frequency content', it needs to be above a certain threshold in dB in at least one of the bins
  * in that band. The threshold is relative to the maximum bin value of all bins, across the entire spectrum.
