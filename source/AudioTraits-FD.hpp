@@ -23,8 +23,6 @@ namespace AudioTraits {
 
 // MARK: - Frequency Domain Audio Traits
 
-// TODO: pass FrequencySelection by reference.
-
 /**
  * Evaluates if all the selected channels have frequency content in all the specified ranges.
  * The spectral content outside the specified ranges is not analyzed.
@@ -36,7 +34,7 @@ namespace AudioTraits {
  */
 struct HasSignalInAllFrequencyRanges
 {
-    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, FrequencySelection frequencySelection,
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const FrequencySelection& frequencySelection,
                      float sampleRate, float threshold_dB = -0.5f)
     {
         if (frequencySelection.getRanges().empty()) {
@@ -85,7 +83,7 @@ struct HasSignalInAllFrequencyRanges
 struct HasSignalOnlyInFrequencyRanges
 {
     // TODO: add overload for single FrequencyRange
-    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, FrequencySelection frequencySelection,
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const FrequencySelection& frequencySelection,
                      float sampleRate, float threshold_dB = -0.5f)
     {
         // We only need to scan 'illegal' ranges for content. If these are clean, the trait is true.
