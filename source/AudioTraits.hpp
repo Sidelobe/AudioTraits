@@ -14,7 +14,7 @@
 #include "ChannelSelection.hpp"
 #include "SignalAdapters.hpp"
 
-#include "AudioTraits-FrequencyDomain.hpp"
+#include "AudioTraits-FD.hpp"
 
 namespace slb {
 namespace AudioTraits {

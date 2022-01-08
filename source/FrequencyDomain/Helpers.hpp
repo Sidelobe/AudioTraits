@@ -11,7 +11,7 @@
 #include <set>
 #include <vector>
 
-#include "FFT/RealValuedFFT.hpp"
+#include "FrequencyDomain/RealValuedFFT.hpp"
 #include "FrequencySelection.hpp"
 
 namespace slb {
@@ -35,21 +35,32 @@ inline void applyHannWindow(std::vector<T>& channelSignal)
     }
 }
 
-/** Create list of bins that correspond to FrequencySelection */
+/** Create list of bins that correspond to one FrequencyRange */
+inline std::set<int> determineCorrespondingBins(const FrequencyRange& frequencyRange, float sampleRate)
+{
+    std::set<int> bins;
+    
+    float freqStart = std::get<0>(frequencyRange.get());
+    float freqEnd = std::get<1>(frequencyRange.get());
+    int expectedBinStart = static_cast<int>(std::floor(freqStart / sampleRate * fftLength));
+    int expectedBinEnd = static_cast<int>(std::ceil(freqEnd / sampleRate * fftLength));
+    ASSERT(expectedBinStart >= 0, "invalid frequency range");
+    ASSERT(expectedBinEnd < numBins, "frequency range too high for this sampling rate");
+    
+    for (int i=expectedBinStart; i <= expectedBinEnd; ++i) {
+        bins.insert(i);
+    }
+    return bins;
+}
+
+/** Create an aggregated list of bins that correspond to all in ranges in the FrequencySelection */
 inline std::set<int> determineCorrespondingBins(const FrequencySelection& frequencySelection, float sampleRate)
 {
     std::set<int> bins;
     
-    for (auto& frequencyRange : frequencySelection.get()) {
-        float freqStart = std::get<0>(frequencyRange);
-        float freqEnd = std::get<1>(frequencyRange);
-        int expectedBinStart = static_cast<int>(std::floor(freqStart / sampleRate * fftLength));
-        int expectedBinEnd = static_cast<int>(std::ceil(freqEnd / sampleRate * fftLength));
-        ASSERT(expectedBinStart >= 0, "invalid frequency range");
-        ASSERT(expectedBinEnd < numBins, "frequency range too high for this sampling rate");
-        for (int i=expectedBinStart; i <= expectedBinEnd; ++i) {
-            bins.insert(i);
-        }
+    for (auto& frequencyRange : frequencySelection.getRanges()) {
+        std::set<int> binsForThisRange = determineCorrespondingBins(frequencyRange, sampleRate);
+        bins.insert(binsForThisRange.begin(), binsForThisRange.end());
     }
     return bins;
 }
@@ -74,6 +85,8 @@ inline std::vector<float> getNormalizedBinValues(std::vector<float>& channelSign
          freqVec = (0:fftN/2-1)*fs/fftN;
          plot(freqVec, mag);
      */
+    
+    // TODO: use overlap-add for cleaner results (?)
 
     RealValuedFFT fft(fftLength);
     
@@ -112,6 +125,9 @@ inline std::vector<float> getNormalizedBinValues(std::vector<float>& channelSign
         binValue /= maxBinValue;
     }
     
+    // Hard-code DC bin to 0
+    accumulatedBins[0] = 0;
+
     return accumulatedBins;
 }
 } // namespace FrequencyDomainHelpers

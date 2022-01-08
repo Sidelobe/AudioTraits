@@ -11,7 +11,7 @@
 #include <numeric>
 #include <iostream>
 
-#include "FFT/RealValuedFFT.hpp"
+#include "FrequencyDomain/RealValuedFFT.hpp"
 
 using namespace slb;
 using namespace slb::AudioTraits;

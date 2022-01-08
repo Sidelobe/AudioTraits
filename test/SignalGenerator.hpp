@@ -14,7 +14,7 @@
 
 #include "Utils.hpp"
 #include "FrequencySelection.hpp"
-#include "FFT/FrequencyDomainHelpers.hpp"
+#include "FrequencyDomain/Helpers.hpp"
 
 // TODO: consider moving to production code.
 

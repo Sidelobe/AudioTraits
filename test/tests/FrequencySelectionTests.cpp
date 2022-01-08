@@ -39,12 +39,12 @@ TEST_CASE("FrequencySelection Tests")
     REQUIRE_NOTHROW(FrequencySelection({})); // this possible
 
     using PairSet = std::set<std::pair<float, float>>;
-    REQUIRE(FrequencySelection{{20, 300}}.get() == PairSet{std::make_pair(20, 300)});
-    REQUIRE(FrequencySelection{3000}.get() == PairSet{std::make_pair(3000, 3000)});
-    REQUIRE(FrequencySelection({}).get().empty());
-    REQUIRE(FrequencySelection{1000, {20, 300}}.get() == PairSet{{20, 300}, std::make_pair(1000, 1000)});
+    REQUIRE(FrequencySelection{{20, 300}}.getBounds() == PairSet{std::make_pair(20, 300)});
+    REQUIRE(FrequencySelection{3000}.getBounds() == PairSet{std::make_pair(3000, 3000)});
+    REQUIRE(FrequencySelection({}).getBounds().empty());
+    REQUIRE(FrequencySelection{1000, {20, 300}}.getBounds() == PairSet{{20, 300}, std::make_pair(1000, 1000)});
     
     // duplication
-    REQUIRE(FrequencySelection{1000, 3000, 1000}.get() == PairSet{std::make_pair(1000, 1000), std::make_pair(3000, 3000)});
-    REQUIRE(FrequencySelection{1000, {1000, 1500}, 1000}.get() == PairSet{std::make_pair(1000, 1000), std::make_pair(1000, 1500)});
+    REQUIRE(FrequencySelection{1000, 3000, 1000}.getBounds() == PairSet{std::make_pair(1000, 1000), std::make_pair(3000, 3000)});
+    REQUIRE(FrequencySelection{1000, {1000, 1500}, 1000}.getBounds() == PairSet{std::make_pair(1000, 1000), std::make_pair(1000, 1500)});
 }
