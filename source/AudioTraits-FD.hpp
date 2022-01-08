@@ -42,7 +42,7 @@ struct HasSignalInAllFrequencyRanges
         }
         
         // Each frequency range needs to be tested individually
-        for (auto& frequencyRange : frequencySelection.getRanges()) {
+        for (const auto& frequencyRange : frequencySelection.getRanges()) {
             // Determine bins where signal is expected
             std::set<int> expectedBins = FrequencyDomainHelpers::determineCorrespondingBins(frequencyRange, sampleRate);
             
@@ -82,7 +82,6 @@ struct HasSignalInAllFrequencyRanges
  */
 struct HasSignalOnlyInFrequencyRanges
 {
-    // TODO: add overload for single FrequencyRange
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const FrequencySelection& frequencySelection,
                      float sampleRate, float threshold_dB = -0.5f)
     {

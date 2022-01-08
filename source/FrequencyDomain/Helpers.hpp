@@ -58,7 +58,7 @@ inline std::set<int> determineCorrespondingBins(const FrequencySelection& freque
 {
     std::set<int> bins;
     
-    for (auto& frequencyRange : frequencySelection.getRanges()) {
+    for (const auto& frequencyRange : frequencySelection.getRanges()) {
         std::set<int> binsForThisRange = determineCorrespondingBins(frequencyRange, sampleRate);
         bins.insert(binsForThisRange.begin(), binsForThisRange.end());
     }
@@ -68,24 +68,6 @@ inline std::set<int> determineCorrespondingBins(const FrequencySelection& freque
 /** @returns the absolute values of the bin contents for a given signal, normalized to the highest-valued bin */
 inline std::vector<float> getNormalizedBinValues(std::vector<float>& channelSignal)
 {
-    // zero-pad to a minimum signal length, fixed FFT size
-    // need windowing between the calls? (apply before zero-padding
-    /*
-         % Experiment in Octave
-         signalLengthSeconds = 1;
-         fs = 48e3;
-         t = [0:1/fs:signalLengthSeconds-1/fs];
-         signal = sin(2*pi*t * 1000); %+ 0.5*sin(2*pi*t * 10000);
-
-         fftN = 16384;
-         spectrum = fft(signal, fftN);
-         spectrum = spectrum(1:fftN/2);
-         mag = abs(spectrum ./fs); % scaling
-
-         freqVec = (0:fftN/2-1)*fs/fftN;
-         plot(freqVec, mag);
-     */
-    
     // TODO: use overlap-add for cleaner results (?)
 
     RealValuedFFT fft(fftLength);
@@ -107,7 +89,7 @@ inline std::vector<float> getNormalizedBinValues(std::vector<float>& channelSign
         
         std::vector<std::complex<float>> freqDomainData = fft.performForward(chunkTimeDomain);
         std::vector<float> binValuesForChunk;
-        for (auto& binValue : freqDomainData) {
+        for (const auto& binValue : freqDomainData) {
             binValuesForChunk.emplace_back(std::abs(binValue));
         }
         

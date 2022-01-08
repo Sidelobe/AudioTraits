@@ -215,11 +215,10 @@ TEST_CASE("AudioTraits::FrequencyDomain: multi-sine tests")
 TEST_CASE("AudioTraits::FrequencyDomain: noise tests")
 {
     float sampleRate = 48e3f;
-    int signalLength = static_cast<int>(sampleRate) * 1;
     SECTION("White Noise (unfiltered)") {
         // Extreme case (Ultra-low frequency, very long signal)
         {
-            signalLength = static_cast<int>(sampleRate) * 35;
+            int signalLength = static_cast<int>(sampleRate) * 35;
             auto noiseSignal = SignalGenerator::createWhiteNoise(signalLength);
             std::vector<std::vector<float>> longNoiseData {noiseSignal, noiseSignal};
             SignalAdapterStdVecVec longNoise(longNoiseData);
@@ -234,7 +233,7 @@ TEST_CASE("AudioTraits::FrequencyDomain: noise tests")
         // Normal cases
         {
             float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
-            signalLength = static_cast<int>(sampleRate) * 10; // need longer signal
+            int signalLength = static_cast<int>(sampleRate) * 10; // need longer signal
             auto noiseSignal = SignalGenerator::createWhiteNoise(signalLength, gain_dB);
             std::vector<std::vector<float>> noiseData {noiseSignal};
             SignalAdapterStdVecVec noise(noiseData);
@@ -268,7 +267,7 @@ TEST_CASE("AudioTraits::FrequencyDomain: noise tests")
         AudioFile<float> bandlimitedNoise(std::string(TOSTRING(SOURCE_DIR)) + "/test/test_data/BandLimitedNoise_1k_4k.wav");
         ASSERT(bandlimitedNoise.getSampleRate() == sampleRate);
 
-        const float gain_dB = 0.f;//GENERATE(0.f, +3.f, -3.f, -50.f);
+        const float gain_dB = 0.f; // hard-coded into file
         constexpr float lowerFreq = 1000;
         constexpr float upperFreq = 4000;
         REQUIRE(upperFreq-lowerFreq > 100); // test build on this

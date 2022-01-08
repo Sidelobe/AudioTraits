@@ -39,7 +39,7 @@ namespace slb {
 class RealValuedFFT
 {
 public:
-    RealValuedFFT(int fftLength) :
+    explicit RealValuedFFT(int fftLength) :
         m_fftLength(Utils::nextPowerOfTwo(fftLength)),
         m_splitTableA(m_fftLength/2),
         m_splitTableB(m_fftLength/2),

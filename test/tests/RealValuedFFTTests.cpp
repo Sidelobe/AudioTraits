@@ -18,10 +18,10 @@ using namespace slb::AudioTraits;
 using namespace TestCommon;
 using namespace std::complex_literals;
 
-std::vector<float> calculateNormalizedMagnitude(std::vector<std::complex<float>> binData)
+std::vector<float> calculateNormalizedMagnitude(const std::vector<std::complex<float>>& binData)
 {
     std::vector<float> magnitude;
-    for (auto& binValue : binData) {
+    for (const auto& binValue : binData) {
         magnitude.push_back(std::abs(binValue));
     }
     float maxValue = *std::max_element(magnitude.begin(), magnitude.end());
