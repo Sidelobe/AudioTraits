@@ -11,10 +11,71 @@
 ![](https://img.shields.io/badge/C++14-header--only-blue.svg?style=flat&logo=c%2B%2B)
 ![](https://img.shields.io/badge/dependencies-STL_only-blue)
 
+*AudioTraits* is an abstraction designed to make testing of audio processing more convenient and readable. An 'Audio Trait' analyzes a given audio signal (some or all of its channels) and check for a certain property. The result of this check is boolean, which allows this to be easily integrated in any unit test framework.
+
+*AudioTraits* is easily extensible - users can define their own traits and signal adapters.
+
+
+
 ### Usage Example
 ```cpp
-TODO
+using namespace slb::AudioTraits; // for convenience
+
+// Assume buffer contains some data with dimensions [channels=6][samples=16] 
+std::vector<std::vector<float>> buffer = { ... };
+SignalAdapterStdVecVec signal(buffer);
+
+// Check if there is signal present
+REQUIRE(check<SignalOnAllChannels>(signal, {})); // signal on all channels 
+REQUIRE(check<SignalOnAllChannels>(signal, {1,2})); // signal on channels 1 and 2
+REQUIRE(check<SignalOnAllChannels>(signal, {1, 2, {4,6}}));  // signal on channels 1, 2 and 4-6
+REQUIRE(check<SignalOnAllChannels>(signal, {5}, -40.f)); // signal on chan 5 is above -40dB
+
+// Check if a signal is a delayed version of another 
+// (tolerance for delay and amplitude can be adjusted)
+SignalAdapterStdVecVec delayedSignal = ...; // assume this is 'signal' delayed by 4 samples
+REQUIRE(check<IsDelayedVersionOf>(signal, {}, delayedSignal, 4);
+REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {}, delayedSignal, 2);
+
+// Check if a signal has frequency content
+constexpr float sampleRate = 48000;
+
+// signal on chan 1 has content at around 1000Hz
+REQUIRE(check<HasSignalInAllBands>(signal, {1}, Freqs{1000}, sampleRate));
+// signal has content in the band 500Hz-1000Hz in all channels
+REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{500, 1000}, sampleRate));
+// signal has content in 100Hz-200Hz that is -30dB below the maximum over the entire spectrum
+REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{100, 200}, sampleRate, -30dB));
+
+// signal only has content above -5dB in the band 20-5000 Hz (relative to the spectral maximum)
+REQUIRE(check<HasSignalOnlyInBands>(signal, {}, Freqs{20, 5000}, sampleRate, -5dB));
+// signal only has content below 4kHz in all channels
+REQUIRE(check<HasSignalOnlyBelow	>(signal, {}, 4000, sampleRate));
+
 ```
+
+### Extension: Custom Traits
+Defining custom traits is very straightforward: a traits is simply a functor with a static function that returns a boolean:
+
+```cpp
+#include "AudioTraits.hpp"
+struct HasOddNumberOfSamples
+{
+    static bool eval(const ISignal& signal, const std::set<int>& selectedChannels)
+    {
+    	if (signal.getNumSamples() % 2 == 0) {
+    		return false; // number of samples is even
+    	} else {
+    	    return true; // number of samples is odd
+    	}
+    }
+};
+```
+- The number of parameters of the `eval()` is variable, so a custom trait may add any number of additional parameters besides `signal` and `selectedChannels`.
+
+- `ISignal` is the common interface for all signal to be analyzed. A signal is a minimalistic 2-dimensional construct with a number of channels and samples.
+
+- Signal 'adapters' are pre-defined for raw pointers (e.g. `float**`) and `std::vector<std::vector<T>>`, and additional adapters can easily be added for other audio signal sources.
 
 ### Requirements / Compatibility
 
