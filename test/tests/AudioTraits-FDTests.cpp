@@ -22,7 +22,7 @@ using namespace AudioTraits;
 using namespace TestCommon;
 
 
-TEST_CASE("AudioTraits::HasSignalInFrequencyRanges and HasSignalOnlyInFrequencyRanges tests")
+TEST_CASE("AudioTraits::FrequencyDomain: basic tests")
 {
     float sampleRate = 48e3f;
     int signalLength = static_cast<int>(sampleRate) * 1;
@@ -78,88 +78,140 @@ TEST_CASE("AudioTraits::HasSignalInFrequencyRanges and HasSignalOnlyInFrequencyR
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(silenceSignal, {2}, FrequencySelection{1}, sampleRate));
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(silenceSignal, {2}, FrequencySelection{sampleRate/2}, sampleRate));
     }
+}
+
+TEST_CASE("AudioTraits::FrequencyDomain: sine tests")
+{
+    float sampleRate = 48e3f;
+    int signalLength = static_cast<int>(sampleRate) * 1;
     
-    SECTION("Sine Waves") {
-        float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
-        auto sine1kSignal = SignalGenerator::createSine<float>(1000, sampleRate, signalLength, gain_dB);
-        auto sine2kSignal = SignalGenerator::createSine<float>(2000, sampleRate, signalLength, gain_dB);
-        auto sine6kSignal = SignalGenerator::createSine<float>(6000, sampleRate, signalLength, gain_dB);
-        std::vector<std::vector<float>> sineData {sine1kSignal, sine2kSignal, sine6kSignal};
-        SignalAdapterStdVecVec sine(sineData);
-
-        REQUIRE(sampleRate == 48000);
+    float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
+    auto sine1kSignal = SignalGenerator::createSine<float>(1000, sampleRate, signalLength, gain_dB);
+    auto sine2kSignal = SignalGenerator::createSine<float>(2000, sampleRate, signalLength, gain_dB);
+    auto sine6kSignal = SignalGenerator::createSine<float>(6000, sampleRate, signalLength, gain_dB);
+    std::vector<std::vector<float>> sineData {sine1kSignal, sine2kSignal, sine6kSignal};
+    SignalAdapterStdVecVec sine(sineData);
+    
+    REQUIRE(sampleRate == 48000);
+    
+    SECTION("Single Frequency Ranges") {
+        // 1kHz sine
+        REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{}, sampleRate)); // no frequency is always false
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{}, sampleRate)); // no frequency is always false
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{1007}, sampleRate)); // +7Hz is still within bin (for this freq, fft size & samplerate)
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1007}, sampleRate)); // +7Hz is still within bin (for this freq, fft size & samplerate)
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1008}, sampleRate)); // +8Hz is outside bin (for this freq, fft size & samplerate)
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{{900, 1100}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{2000}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{900}, sampleRate));
         
-        SECTION("Single Frequency Ranges") {
-            // 1kHz sine
-            REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{}, sampleRate)); // no frequency is always false
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{}, sampleRate)); // no frequency is always false
-            REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate));
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate));
-            REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{1007}, sampleRate)); // +7Hz is still within bin (for this freq, fft size & samplerate)
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1007}, sampleRate)); // +7Hz is still within bin (for this freq, fft size & samplerate)
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1008}, sampleRate)); // +8Hz is outside bin (for this freq, fft size & samplerate)
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{{900, 1100}}, sampleRate));
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{2000}, sampleRate));
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{900}, sampleRate));
-
-            // 2kHz sine
-            REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {2}, FrequencySelection{2000}, sampleRate));
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2000}, sampleRate));
-            REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {2}, FrequencySelection{2014}, sampleRate)); // +14Hz is still within bin (for this freq, fft size & samplerate)
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2014}, sampleRate)); // +14Hz is still within bin (for this freq, fft size & samplerate)
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2016}, sampleRate)); // +16Hz is outside bin (for this freq, fft size & samplerate)
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{{1950, 2050}}, sampleRate));
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{1000}, sampleRate));
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2050}, sampleRate)); // 50 Hz is enough to be in next bin at this fs
-
-            // multichannel: 1k in L and 2k in R
-            REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {1, 2}, FrequencySelection{{1000, 2000}}, sampleRate, -2)); // both channels are within this range
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{1000, 2000}}, sampleRate, -2)); // both channels are within this range
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{900, 1500}}, sampleRate)); // R is outside this range
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{20, 900}}, sampleRate)); // No signal
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{2100, sampleRate/2}}, sampleRate)); // No signal
-            
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{1000, 6000}}, sampleRate));
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{2000, 6000}}, sampleRate));
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2, 3}, FrequencySelection{{2000, 6000}}, sampleRate));
-
-            // set specific threshold
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate, -5.f));
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2000}, sampleRate, -5.f));
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate, -12.f));
-            REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{500}, sampleRate, -120)); // super low threshold always true
-            REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate, +.0001f)); // positive threshold cannot be true.
-        }
-
-        SECTION("Multiple Frequency Ranges") {
-            // Sine has 1000, 2000 and 6000 components in channels 1,2,3 respectively
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{1000}, {2000}, {6000}}, sampleRate)); // All channels have signals in valid ranges
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{1000}, {6000}}, sampleRate)); // 2000 Hz is not valid, check in channel 2 fails
-            REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sine, {}, FrequencySelection{{1000}, {6000}}, sampleRate)); // one range fails for ch 1 and 3, both fail for ch 2
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{500}, {1000}, {2000}, {6000}}, sampleRate)); // 500 Hz is not present in signal
-            REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sine, {}, FrequencySelection{{500}, {1000}, {2000}, {6000}}, sampleRate)); // 500 Hz is not present in signal
-
-            // exclude channel 2
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 3}, FrequencySelection{{1000}, {6000}}, sampleRate));
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 3}, FrequencySelection{{1000, 6000}}, sampleRate));
-            REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 3}, FrequencySelection{{600, 1200}, {2100, 10000}}, sampleRate));
-            
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{600, 1200}, {2100, 10000}}, sampleRate));
-            REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{600, 1200}, {2100, 10000}}, sampleRate));
-        }
+        // 2kHz sine
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {2}, FrequencySelection{2000}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2000}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {2}, FrequencySelection{2014}, sampleRate)); // +14Hz is still within bin (for this freq, fft size & samplerate)
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2014}, sampleRate)); // +14Hz is still within bin (for this freq, fft size & samplerate)
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2016}, sampleRate)); // +16Hz is outside bin (for this freq, fft size & samplerate)
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{{1950, 2050}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{1000}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2050}, sampleRate)); // 50 Hz is enough to be in next bin at this fs
         
-        SECTION("Summed Sine Waves in a Channel") {
-            // TODO
-            
-            // different amplitudes
-            
-        }
-
+        // multichannel: 1k in L and 2k in R
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {1, 2}, FrequencySelection{{1000, 2000}}, sampleRate, -2)); // both channels are within this range
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{1000, 2000}}, sampleRate, -2)); // both channels are within this range
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{900, 1500}}, sampleRate)); // R is outside this range
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{20, 900}}, sampleRate)); // No signal
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{2100, sampleRate/2}}, sampleRate)); // No signal
+        
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{1000, 6000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{2000, 6000}}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2, 3}, FrequencySelection{{2000, 6000}}, sampleRate));
+        
+        // set specific threshold
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate, -5.f));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {2}, FrequencySelection{2000}, sampleRate, -5.f));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate, -12.f));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{500}, sampleRate, -120)); // super low threshold always true
+        REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sine, {1}, FrequencySelection{1000}, sampleRate, +.0001f)); // positive threshold cannot be true.
     }
     
-    SECTION("White Noise (unfiltered)") {
+    SECTION("Multiple Frequency Ranges") {
+        // Sine has 1000, 2000 and 6000 components in channels 1,2,3 respectively
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{1000}, {2000}, {6000}}, sampleRate)); // All channels have signals in valid ranges
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{1000}, {6000}}, sampleRate)); // 2000 Hz is not valid, check in channel 2 fails
+        REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sine, {}, FrequencySelection{{1000}, {6000}}, sampleRate)); // one range fails for ch 1 and 3, both fail for ch 2
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{500}, {1000}, {2000}, {6000}}, sampleRate)); // 500 Hz is not present in signal
+        REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sine, {}, FrequencySelection{{500}, {1000}, {2000}, {6000}}, sampleRate)); // 500 Hz is not present in signal
         
-        SECTION("Extreme case (Ultra-low frequency, very long signal)") {
+        // exclude channel 2
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 3}, FrequencySelection{{1000}, {6000}}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 3}, FrequencySelection{{1000, 6000}}, sampleRate));
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 3}, FrequencySelection{{600, 1200}, {2100, 10000}}, sampleRate));
+        
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {1, 2}, FrequencySelection{{600, 1200}, {2100, 10000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sine, {}, FrequencySelection{{600, 1200}, {2100, 10000}}, sampleRate));
+    }
+}
+
+TEST_CASE("AudioTraits::FrequencyDomain: multi-sine tests")
+{
+    float sampleRate = 48e3f;
+    int signalLength = static_cast<int>(sampleRate) * 1;
+    
+    SECTION("Summed Sine Waves in a Channel") {
+        auto sine1kSignal = SignalGenerator::createSine<float>(1000, sampleRate, signalLength);
+        auto sine2kSignal = SignalGenerator::createSine<float>(2000, sampleRate, signalLength);
+        
+        std::vector<float> sine1k2kSignal(signalLength);
+        for (int i=0; i < signalLength; ++i) {
+            sine1k2kSignal[i] = sine1kSignal[i] + sine2kSignal[i];
+        }
+        std::vector<std::vector<float>> sinesData {sine1k2kSignal};
+        SignalAdapterStdVecVec sines(sinesData);
+        
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1000},{2000}}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1000}}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{2000}}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{900,1100},{1800,2200}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1050,1100},{2000}}, sampleRate)); // 1k is no longer in range
+
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1000},{2000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{2000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1050,1100},{2000}}, sampleRate));
+    }
+    SECTION("Summed Sines with different amplitudes") {
+        auto sine1kSignal = SignalGenerator::createSine<float>(1000, sampleRate, signalLength, 0.f);
+        auto sine2kSignal = SignalGenerator::createSine<float>(2000, sampleRate, signalLength, -40.f);
+        
+        std::vector<float> sine1k2kSignal(signalLength);
+        for (int i=0; i < signalLength; ++i) {
+            sine1k2kSignal[i] = sine1kSignal[i] + sine2kSignal[i];
+        }
+        std::vector<std::vector<float>> sinesData {sine1k2kSignal};
+        SignalAdapterStdVecVec sines(sinesData);
+        
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1000},{2000}}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1000}}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{2000}}, sampleRate));
+        REQUIRE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{900,1100},{1800,2200}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(sines, {}, FrequencySelection{{1050,1100},{2000}}, sampleRate)); // 1k is no longer in range
+
+        REQUIRE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1000},{2000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{2000}}, sampleRate));
+        REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(sines, {}, FrequencySelection{{1050,1100},{2000}}, sampleRate));
+    }
+}
+    
+TEST_CASE("AudioTraits::FrequencyDomain: noise tests")
+{
+    float sampleRate = 48e3f;
+    int signalLength = static_cast<int>(sampleRate) * 1;
+    SECTION("White Noise (unfiltered)") {
+        // Extreme case (Ultra-low frequency, very long signal)
+        {
             signalLength = static_cast<int>(sampleRate) * 35;
             auto noiseSignal = SignalGenerator::createWhiteNoise(signalLength);
             std::vector<std::vector<float>> longNoiseData {noiseSignal, noiseSignal};
@@ -167,13 +219,13 @@ TEST_CASE("AudioTraits::HasSignalInFrequencyRanges and HasSignalOnlyInFrequencyR
             
             // One range emcompasses all bins -> cannot be false
             REQUIRE(check<HasSignalInAllFrequencyRanges>(longNoise, {}, FrequencySelection{{1, sampleRate/2}}, sampleRate));
-
+            
             // second bin at 2*ceil(48000/4096)=24Hz
             REQUIRE(sampleRate == 48000);
             REQUIRE_FALSE(check<HasSignalOnlyInFrequencyRanges>(longNoise, {}, FrequencySelection{{24, sampleRate/2}}, sampleRate));
         }
-        
-        SECTION("Normal cases") {
+        // Normal cases
+        {
             float gain_dB = GENERATE(0.f, +3.f, -3.f, -50.f);
             signalLength = static_cast<int>(sampleRate) * 10; // need longer signal
             auto noiseSignal = SignalGenerator::createWhiteNoise(signalLength, gain_dB);
@@ -182,7 +234,7 @@ TEST_CASE("AudioTraits::HasSignalInFrequencyRanges and HasSignalOnlyInFrequencyR
             
             // lower threshold because signal is not long enough
             float thrs = -3.f;
-        
+            
             // positive threshold, cannot be true.
             REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(noise, {}, FrequencySelection{{20, sampleRate/2}}, sampleRate, +.5f));
             
@@ -221,16 +273,6 @@ TEST_CASE("AudioTraits::HasSignalInFrequencyRanges and HasSignalOnlyInFrequencyR
         }
         
         SignalAdapterStdVecVec noise(bandlimitedNoise.samples);
-
-//        // DEBUG:
-//        auto bins = FrequencyDomainHelpers::getNormalizedBinValues(bandlimitedNoise.samples[0]);
-//        int i = 0;
-//        for (auto v : FrequencyDomainHelpers::getNormalizedBinValues(bandlimitedNoise.samples[0])) {
-//            if (Utils::linear2Db(v) > -6.f) {
-//                std::cout << "bin[" << i << "] = " << Utils::linear2Db(v) << "\n";
-//            }
-//            i++;
-//        }
         
         float thrs = -5.9f; // This seems to be the amount of precision we can currently get with band-limited noise
         
@@ -238,8 +280,6 @@ TEST_CASE("AudioTraits::HasSignalInFrequencyRanges and HasSignalOnlyInFrequencyR
         REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(noise, {}, FrequencySelection{{20, 400}, {lowerFreq, upperFreq}}, sampleRate, thrs));
         REQUIRE_FALSE(check<HasSignalInAllFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq}, {10000, sampleRate/2}}, sampleRate, thrs));
 
-        // We need to slightly increase the threshold here because the second bin (one after DC) has some signal in it. (??)
-        //thrs = -5.5f;
         REQUIRE(check<HasSignalOnlyInFrequencyRanges>(noise, {}, FrequencySelection{{lowerFreq, upperFreq}}, sampleRate, thrs));
         REQUIRE_FALSE(check<HasSignalOnlyAbove>(noise, {}, centerPoint, sampleRate, thrs));
         REQUIRE(check<HasSignalOnlyAbove>(noise, {}, lowerFreq, sampleRate, thrs));
