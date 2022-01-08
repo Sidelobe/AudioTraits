@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ChannelSelection.hpp"
+#include "FrequencySelection.hpp"
 #include "SignalAdapters.hpp"
 
 #include "AudioTraits-FD.hpp"
@@ -56,7 +57,7 @@ static inline bool areVectorsEqual(const std::vector<float>& a, const std::vecto
 /**
  * Evaluates if all of the selected channels have at least one sample above the threshold (absolute value)
  */
-struct SignalOnAllChannels
+struct HasSignalOnAllChannels
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float threshold_dB = -96.f)
     {

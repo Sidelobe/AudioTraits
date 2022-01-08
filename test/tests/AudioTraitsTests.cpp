@@ -106,28 +106,28 @@ TEST_CASE("AudioTraits::SignalOnAllChannels Tests")
     SignalAdapterStdVecVec signal(buffer);
 
     SECTION("Full scale signal") {
-        REQUIRE(check<SignalOnAllChannels>(signal, {{1,2}}));
-        REQUIRE_FALSE(check<SignalOnAllChannels>(signal, {1,2}, 3.f)); // positive threshold never reached
+        REQUIRE(check<HasSignalOnAllChannels>(signal, {{1,2}}));
+        REQUIRE_FALSE(check<HasSignalOnAllChannels>(signal, {1,2}, 3.f)); // positive threshold never reached
 
         std::vector<std::vector<float>> bufferL = { dataL, zeros };
         SignalAdapterStdVecVec signalLeftOnly(bufferL);
-        REQUIRE(check<SignalOnAllChannels>(signalLeftOnly, {1}));
-        REQUIRE_FALSE(check<SignalOnAllChannels>(signalLeftOnly, {2}));
-        REQUIRE_FALSE(check<SignalOnAllChannels>(signalLeftOnly, {2}, -40));
-        REQUIRE_FALSE(check<SignalOnAllChannels>(signalLeftOnly, {2}, -144));
+        REQUIRE(check<HasSignalOnAllChannels>(signalLeftOnly, {1}));
+        REQUIRE_FALSE(check<HasSignalOnAllChannels>(signalLeftOnly, {2}));
+        REQUIRE_FALSE(check<HasSignalOnAllChannels>(signalLeftOnly, {2}, -40));
+        REQUIRE_FALSE(check<HasSignalOnAllChannels>(signalLeftOnly, {2}, -144));
     }
     SECTION("Reduced signal on one channel") {
         // scale dataR to -40dB
         scale(buffer, {2}, Utils::dB2Linear(-40.f));
-        REQUIRE_FALSE(check<SignalOnAllChannels>(signal, {2}, -40.f));
-        REQUIRE_FALSE(check<SignalOnAllChannels>(signal, {1, 2}, -40.f)); // channel 1 has signal, but channel 2 hasn't ->false
-        REQUIRE(check<SignalOnAllChannels>(signal, {1}, -40.f));
-        REQUIRE(check<SignalOnAllChannels>(signal, {1, 2}, -50.f));
+        REQUIRE_FALSE(check<HasSignalOnAllChannels>(signal, {2}, -40.f));
+        REQUIRE_FALSE(check<HasSignalOnAllChannels>(signal, {1, 2}, -40.f)); // channel 1 has signal, but channel 2 hasn't ->false
+        REQUIRE(check<HasSignalOnAllChannels>(signal, {1}, -40.f));
+        REQUIRE(check<HasSignalOnAllChannels>(signal, {1, 2}, -50.f));
         
         // Test at the exact detection threshold, taking into account the signal's absmax value
         float absmax = std::max(std::abs(*std::min_element(dataR.begin(), dataR.end())), *std::max_element(dataR.begin(), dataR.end()));
         float pointWhereSignalIsDetected_dB = -40.f + Utils::linear2Db(absmax);
-        REQUIRE(check<SignalOnAllChannels>(signal, {2}, pointWhereSignalIsDetected_dB - 1e-5f)); // - 'tolerance'
+        REQUIRE(check<HasSignalOnAllChannels>(signal, {2}, pointWhereSignalIsDetected_dB - 1e-5f)); // - 'tolerance'
     }
     
 }

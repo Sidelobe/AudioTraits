@@ -19,23 +19,25 @@
 
 ### Usage Example
 ```cpp
-using namespace slb::AudioTraits; // for convenience
+#include "AudioTraits.hpp"
+using namespace slb;
+using namespace AudioTraits; // for convenience
 
 // Assume buffer contains some data with dimensions [channels=6][samples=16] 
 std::vector<std::vector<float>> buffer = { ... };
 SignalAdapterStdVecVec signal(buffer);
 
 // Check if there is signal present
-REQUIRE(check<SignalOnAllChannels>(signal, {})); // signal on all channels 
-REQUIRE(check<SignalOnAllChannels>(signal, {1,2})); // signal on channels 1 and 2
-REQUIRE(check<SignalOnAllChannels>(signal, {1, 2, {4,6}}));  // signal on channels 1, 2 and 4-6
-REQUIRE(check<SignalOnAllChannels>(signal, {5}, -40.f)); // signal on chan 5 is above -40dB
+REQUIRE(check<HasSignalOnAllChannels>(signal, {})); // signal on all channels 
+REQUIRE(check<HasSignalOnAllChannels>(signal, {1,2})); // signal on channels 1 and 2
+REQUIRE(check<HasSignalOnAllChannels>(signal, {1, 2, {4,6}}));  // signal on channels 1, 2 and 4-6
+REQUIRE(check<HasSignalOnAllChannels>(signal, {5}, -40.f)); // signal on chan 5 is above -40dB
 
 // Check if a signal is a delayed version of another 
 // (tolerance for delay and amplitude can be adjusted)
 SignalAdapterStdVecVec delayedSignal = ...; // assume this is 'signal' delayed by 4 samples
-REQUIRE(check<IsDelayedVersionOf>(signal, {}, delayedSignal, 4);
-REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {}, delayedSignal, 2);
+REQUIRE(check<IsDelayedVersionOf>(signal, {}, delayedSignal, 4));
+REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {}, delayedSignal, 2));
 
 // Check if a signal has frequency content
 constexpr float sampleRate = 48000;
@@ -45,10 +47,10 @@ REQUIRE(check<HasSignalInAllBands>(signal, {1}, Freqs{1000}, sampleRate));
 // signal has content in the band 500Hz-1000Hz in all channels
 REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{500, 1000}, sampleRate));
 // signal has content in 100Hz-200Hz that is -30dB below the maximum over the entire spectrum
-REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{100, 200}, sampleRate, -30dB));
+REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{100, 200}, sampleRate, -30.f));
 
 // signal only has content above -5dB in the band 20-5000 Hz (relative to the spectral maximum)
-REQUIRE(check<HasSignalOnlyInBands>(signal, {}, Freqs{20, 5000}, sampleRate, -5dB));
+REQUIRE(check<HasSignalOnlyInBands>(signal, {}, Freqs{20, 5000}, sampleRate, -5.f));
 // signal only has content below 4kHz in all channels
 REQUIRE(check<HasSignalOnlyBelow>(signal, {}, 4000, sampleRate));
 
