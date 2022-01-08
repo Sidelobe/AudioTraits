@@ -2,7 +2,6 @@
   ╔═╗┬ ┬┌┬┐┬┌─┐╔╦╗┬─┐┌─┐┬┌┬┐┌─┐
   ╠═╣│ │ ││││ │ ║ ├┬┘├─┤│ │ └─┐
   ╩ ╩└─┘─┴┘┴└─┘ ╩ ┴└─┴ ┴┴ ┴ └─┘
-
 ```
 
 ### An extensible testing abstraction for audio signals
@@ -27,7 +26,7 @@ using namespace AudioTraits; // for convenience
 std::vector<std::vector<float>> buffer = { ... };
 SignalAdapterStdVecVec signal(buffer);
 
-// Check if there is signal present
+// Check if there is signal present (time domain)
 REQUIRE(check<HasSignalOnAllChannels>(signal, {})); // signal on all channels 
 REQUIRE(check<HasSignalOnAllChannels>(signal, {1,2})); // signal on channels 1 and 2
 REQUIRE(check<HasSignalOnAllChannels>(signal, {1, 2, {4,6}}));  // signal on channels 1, 2 and 4-6
@@ -39,7 +38,7 @@ SignalAdapterStdVecVec delayedSignal = ...; // assume this is 'signal' delayed b
 REQUIRE(check<IsDelayedVersionOf>(signal, {}, delayedSignal, 4));
 REQUIRE_FALSE(check<IsDelayedVersionOf>(signal, {}, delayedSignal, 2));
 
-// Check if a signal has frequency content
+// Frequency-Domain Traits:
 constexpr float sampleRate = 48000;
 
 // signal on chan 1 has content at around 1000Hz
@@ -68,7 +67,7 @@ struct HasOddNumberOfSamples
     	if (signal.getNumSamples() % 2 == 0) {
     		return false; // number of samples is even
     	} else {
-    	    return true; // number of samples is odd
+    		return true; // number of samples is odd
     	}
     }
 };
