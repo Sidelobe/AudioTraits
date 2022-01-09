@@ -1,0 +1,118 @@
+# Travis configuration file for AudioTraits
+language:
+    - cpp
+matrix:
+    include:
+        - os: osx
+          osx_image: xcode11.6
+          compiler: clang
+          env: CONFIG="Debug" COMPILER='clang++'  COV="no"
+          
+        - os: osx
+          osx_image: xcode11.6
+          compiler: clang
+          env: CONFIG="Release" COMPILER='clang++' COV="yes"
+          addons:
+            sonarcloud:
+                organization: "idelobe" # the key of the org you chose at step #3
+                token:
+                    secure: "q1vncr5xuV1kBICtggBr+nXnGkIsZRS2Z7x74VzFEfBSvZSkTQMDebGSFdJF5zBxac9LSDE5mRPHq/gH0l7q0nbND35paWM867ZW7LSCSHJmjN87wKMwrykCbQ22Oak5/EZSZLRvs0iLkFRGudFwHQcgEggvELSqddzxitC6f1K4CdG0RkBmrWzsAjVJKbv+C82MLxVlv2t3bjO4VRu0XBd5AbVfqmfdPiQhbW/zD/iV9StnJ3YkYmoTtaLw0SL6WOCzCAbdKc6obCF7jLzEkdZOqsMbZqfvUAnWV/iYgbDsdzaBGdhOeEbrXpXrTH6n9K/oMK1iFM+qKzH8KEtGTL1jGPa6HFx07BJLKktU2Yme/KAFrZ5jhhZcFUBth5ENtTITfOke5+l1PFtjuxl2fgv6bD0kOXtHb8wJun4EUWR3jdaXiLBMtmAkYLgqvxOSMWjN6BcbYWuJNX7TvnnRzq5wqH8GE9s2OGRJHd9j2b/qlezUCPsfkXoYuQM1zwOdrJoRT0Dxqjk4345cf1G/1JD45y46jEmuQqsVbOQUoeEHMfmbeLvcBiUJ8qyW4/eUO5I6TqNjqX5gRhOwnK/7E+LFiGArZ3x6+lhTYFPbKqTTZPERLVfbR0l+D5nQsOAQ6QexDDHtel1OJ3w3VxZ/Xzw8QrgN/JvKiBd8eUGfxsI="
+        
+        - os: linux
+          dist: bionic
+          arch: arm64-graviton2
+          virt: lxd
+          group: edge
+          env: CONFIG="Release" COMPILER='g++-9' COV="no" 
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages:
+                    - g++-9
+        - os: linux
+          dist: bionic
+          compiler: gcc
+          env: CONFIG="Debug" COMPILER='g++-9' COV="no" 
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages:
+                    - g++-9
+        
+        - os: linux
+          dist: bionic
+          compiler: gcc
+          env: CONFIG="Release" COMPILER='g++-9' COV="no" 
+          addons:
+              apt:
+                  sources: ['ubuntu-toolchain-r-test']
+                  packages:
+                    - g++-9
+        
+        - os: windows
+          env: CONFIG="Debug" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
+        
+        - os: windows
+          env: CONFIG="Release" COV="no" MSBUILD_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin"
+
+install:
+  - |
+    if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+      echo ${TRAVIS_CPU_ARCH}
+      if [ ${TRAVIS_CPU_ARCH} == "arm64" ]; then
+        export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-linux-aarch64.tar.gz"
+      else
+        export CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-linux-x86_64.tar.gz"
+      fi
+      export DEPS_DIR=$PWD
+      echo "Installing Cmake from ${CMAKE_URL}"
+      mkdir cmake
+      travis_retry wget --quiet --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+      echo "Cmake Updated!"
+      
+    elif [ "${TRAVIS_OS_NAME}" == "windows" ]; then
+      choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+    fi
+    
+    if [ "$COV" == "yes" ]; then
+      pip3 install gcovr
+      echo "Gcovr Updated!"
+      gcovr --version
+    fi
+  
+before_script:    
+    # Export CXX to tell cmake which compiler to use
+    - export CXX=${COMPILER}
+    - export CPP_STANDARD=14
+    # Check versions
+    - cmake --version
+    - pwd
+    # Run your build commands next
+    - cd deploy
+    - mkdir -p build
+    - cd build
+    - if [ "$TRAVIS_OS_NAME" != "windows" ]; then cmake -H. ../.. -DCMAKE_BUILD_TYPE=$CONFIG -DCODE_COVERAGE="$COV"; fi
+    - if [ "$TRAVIS_OS_NAME" == "windows" ]; then export PATH=$MSBUILD_PATH:$PATH; cmake -G "Visual Studio 16 2019" -DCMAKE_GENERATOR_PLATFORM=x64 ../..; fi
+    
+script:
+    ## assumption: pwd=deploy/build
+    - |
+      if [ "${TRAVIS_OS_NAME}" == "windows" ]; then
+          cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64
+          cmd.exe //C "MSBuild.exe AudioTraits.sln" //m:2 //nologo //verbosity:quiet //p:Configuration=$CONFIG //p:Platform=x64
+          ./$CONFIG/AudioTraitsTest.exe
+      elif [ "${TRAVIS_OS_NAME}" == "osx" ] && [ "$COV" == "yes" ]; then
+          build-wrapper-macosx-x86 --out-dir bw-output make -j 4 # Wraps the compilation with the Build Wrapper to generate configuration (used later by the SonarScanner) into the "bw-output" folder
+          #ctest -V -j 4 # run the tests
+          ./AudioTraitsTest
+          cd ..
+          mkdir -p report
+          gcovr -r .. -f ../source  --exclude-unreachable-branches --exclude-throw-branches --sonarqube -o report/coverage.xml  # Generate coverage report
+          cd ..  # run sonar-scanner from repo root 
+          sonar-scanner  
+      else
+          make -j 4
+          #ctest -V -j 4
+          ./AudioTraitsTest
+      fi
