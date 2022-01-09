@@ -14,7 +14,10 @@
 
 *AudioTraits* is easily extensible - users can define their own traits and signal adapters.
 
+In the testing landscape, *AudioTraits* is meant to go somewhere between basic instantiation-only and fully-fledged numerical precision tests (e.g. comparison against reference data)
 
+- **What it was designed for**: testing the logic and functionality of audio blocks with idiomatic code
+- **What it was NOT designed for**: precision, performance, efficiency, use in production code
 
 ### Usage Example
 ```cpp
@@ -55,8 +58,10 @@ REQUIRE(check<HasSignalOnlyBelow>(signal, {}, 4000, sampleRate));
 
 ```
 
+>NOTE: For the frequency-domain traits, a 4096-point FFT is calculated for every single check. This is - needless to say - very inefficient, but a conscious design choice for the sake of simplicity. Adding more optimized, stateful 'traits' is quite easy, should there be a need.
+
 ### Extension: Custom Traits
-Defining custom traits is very straightforward: a traits is simply a functor with a static function that returns a boolean:
+Defining custom traits is very straightforward: a traits is simply a functor with a static (stateless) function that returns a boolean:
 
 ```cpp
 #include "AudioTraits.hpp"
@@ -65,7 +70,7 @@ struct HasOddNumberOfSamples
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels)
     {
     	if (signal.getNumSamples() % 2 == 0) {
-    		return false; // number of samples is even
+			return false; // number of samples is even
     	} else {
     		return true; // number of samples is odd
     	}
