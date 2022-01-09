@@ -28,7 +28,7 @@ public:
     }
     
     /**
-     * Range of frequencies
+     * Range of frequencies (deliberately non-explicit ctor) 
      * TODO: consider making this explicit -- maybe rename class to something shorter in this case
      */
     FreqBand(float lowerBound, float uppperBound) : m_range{std::make_pair(lowerBound, uppperBound)}
@@ -50,7 +50,7 @@ private:
 class Freqs
 {
 public:
-    Freqs(std::initializer_list<FreqBand> selectedRanges) : m_selectedRanges(selectedRanges) {}
+    explicit Freqs(std::initializer_list<FreqBand> selectedRanges) : m_selectedRanges(selectedRanges) {}
     
     /** @return a duplicate-free list of FrequencyRange Bound pairs contained in the selection */
     std::set<FreqBand::Bounds> getBounds() const

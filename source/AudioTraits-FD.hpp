@@ -111,21 +111,21 @@ struct HasSignalOnlyInBands
 };
 
 
-/** Can be used as a shorthand */
+/** Can be used as a shorthand for HasSignalOnlyInBands, where the lower limit of the band is the minimum frequency (1Hz)*/
 struct HasSignalOnlyBelow
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float frequency, float sampleRate, float threshold_dB = -0.5f)
     {
-        return HasSignalOnlyInBands::eval(signal, selectedChannels, {FreqBand{1, frequency}}, sampleRate, threshold_dB);
+        return HasSignalOnlyInBands::eval(signal, selectedChannels, Freqs{{1, frequency}}, sampleRate, threshold_dB);
     }
 };
 
-/** Can be used as a shorthand */
+/** Can be used as a shorthand for HasSignalOnlyInBands, where the upper limit of the band is the maximum frequency (Nyquist=samplerate/2) */
 struct HasSignalOnlyAbove
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float frequency, float sampleRate, float threshold_dB = -0.5f)
     {
-        return HasSignalOnlyInBands::eval(signal, selectedChannels, {FreqBand{frequency, sampleRate/2}}, sampleRate, threshold_dB);
+        return HasSignalOnlyInBands::eval(signal, selectedChannels, Freqs{{frequency, sampleRate/2}}, sampleRate, threshold_dB);
     }
 };
 
