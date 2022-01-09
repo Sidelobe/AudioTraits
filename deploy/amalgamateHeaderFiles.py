@@ -130,11 +130,19 @@ def main():
                 num_includes = len(unique_user_includes)
                 index = len(unique_user_includes) - 1
                 while index >= 0:
-                    file = unique_user_includes[index]
-                    include_file_contents = get_content_without_includes(file)
+                    user_include_file = unique_user_includes[index]
+                    include_file_contents = get_content_without_includes(user_include_file)
                     index -= 1
-                    amalgam.write("\n// MARK: -------- " + os.path.relpath(file, base_dir) + " --------\n")
-                    amalgam.write(include_file_contents)
+                    amalgam.write("\n// MARK: -------- " + os.path.relpath(user_include_file, base_dir) + " --------\n")
+                    
+                    # if include is a C file, put in 'extern "C"{}''
+                    user_include_ext = os.path.splitext(user_include_file)
+                    if user_include_ext[1] == ".h":
+                        amalgam.write("extern \"C\" \n{\n")
+                        amalgam.write(include_file_contents)
+                        amalgam.write("} // extern \"C\"\n")
+                    else:
+                        amalgam.write(include_file_contents)
                 includesAdded = True
                 
     print "Created amalgamated header file in %s" % out_file_name
