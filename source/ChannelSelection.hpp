@@ -26,8 +26,9 @@ public:
         ASSERT(channel > 0, "invalid channel!");
     }
     
-    /** Range
-     TODO: consider making this explicit -- maybe rename class to something shorter in this case
+    /**
+     * Range of channels (deliberately non-explicit ctor)
+     * TODO: consider making this explicit -- maybe rename class to something shorter in this case
      */
     SelectionItem(int first, int last) : m_selection(last - first + 1)
     {
