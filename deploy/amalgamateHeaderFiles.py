@@ -20,14 +20,17 @@ def resolve_include_in_path(include_name, base_dir):
     - Files in all subdirectories of the base path are 
     - In case of multiple matches, more precise matches are preferred
     """
-    subdirs = []
-    for x in os.walk(base_dir):
-        subdirs.append(x[0])
-    
     # split include name into path & file name
     incl_dir_file = os.path.split(include_name)
+    if incl_dir_file[0]:
+        # include contains a path: try direct resolution first
+        include_file_name = base_dir + "/" + include_name
+        if os.path.exists(include_file_name):
+            return include_file_name
+    # otherwise, search in all (sub)directories
     include_name = incl_dir_file[1] # keep only the file name
-    for dir in subdirs:
+    for x in os.walk(base_dir):
+        dir = x[0]
         include_file_name = dir + "/" + include_name
         if os.path.exists(include_file_name):
             return include_file_name
@@ -65,7 +68,6 @@ def main():
     #
     # replace each #include with file contents:
     #    - strip any header notices and system includes
-    #    - respect include guards - avoid double resolution
     
     if len(sys.argv) < 2:
         raise SyntaxError("Not enough arguments! Must provide top-level include .hpp")
@@ -74,12 +76,14 @@ def main():
     base_dir = os.path.dirname(os.path.abspath(file_name))
     print "\n   AMALGAMATOR    "
     print "========================\nScanning file %s for user includes " % file_name
-    print "Resolving #includes in subdirectories of %s" % base_dir
+    print "Resolving #includes in subdirectories of %s\n" % base_dir
     
     unique_includes = set()
     extract_user_includes(file_name, base_dir, unique_includes)
     
-    print "\nFound chain of %d unique includes" % len(unique_includes)
+    print "\nFound chain of %d unique includes\n" % len(unique_includes)
+    
+    
     
 if __name__ == "__main__":
     # execute only if run as a script
