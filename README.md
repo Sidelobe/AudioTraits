@@ -4,7 +4,7 @@
   ╩ ╩└─┘─┴┘┴└─┘ ╩ ┴└─┴ ┴┴ ┴ └─┘
 ```
 
-### An extensible testing abstraction for audio signals
+### An extensible C++ testing abstraction for audio signals
 
 ![](https://img.shields.io/github/license/Sidelobe/AudioTraits)
 ![](https://img.shields.io/badge/C++14-header--only-blue.svg?style=flat&logo=c%2B%2B)
