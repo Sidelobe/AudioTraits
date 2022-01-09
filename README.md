@@ -69,11 +69,11 @@ struct HasOddNumberOfSamples
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels)
     {
-    	if (signal.getNumSamples() % 2 == 0) {
-			return false; // number of samples is even
-    	} else {
-    		return true; // number of samples is odd
-    	}
+        if (signal.getNumSamples() % 2 == 0) {
+            return false; // number of samples is even
+        } else {
+            return true; // number of samples is odd
+        }
     }
 };
 ```
@@ -94,8 +94,8 @@ struct HasOddNumberOfSamples
 	
 ### Build Status / Quality Metrics
 
-![](https://img.shields.io/badge/branch-master-blue)
-[![Build Status (master)](https://travis-ci.com/Sidelobe/AudioTraits.svg?branch=master)](https://travis-ci.com/Sidelobe/AudioTraits)
+![](https://img.shields.io/badge/branch-main-blue)
+[![Build Status (master)](https://travis-ci.com/Sidelobe/AudioTraits.svg?branch=main)](https://travis-ci.com/Sidelobe/AudioTraits)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ![](https://img.shields.io/badge/branch-develop-blue)
 [![Build Status (develop)](https://travis-ci.com/Sidelobe/AudioTraits.svg?branch=develop)](https://travis-ci.com/Sidelobe/AudioTraits)
