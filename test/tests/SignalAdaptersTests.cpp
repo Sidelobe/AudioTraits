@@ -5,12 +5,14 @@
 //
 //  © 2021 Lorenz Bucher - all rights reserved
 
-#include "TestCommon.hpp"
-
 #include "SignalAdapters.hpp"
+
+#include "TestCommon.hpp"
+#include "SignalGenerator.hpp"
 #include "AudioFileSignalAdapter.hpp"
 
 using namespace TestCommon;
+using namespace slb;
 
 TEST_CASE("SignalAdapters Test AudioFile Adapter")
 {
@@ -34,8 +36,8 @@ TEST_CASE("SignalAdapters Test Raw Adapter")
 {
     using namespace slb::AudioTraits;
     
-    std::vector<float> dataL = createRandomVector(16, 333);
-    std::vector<float> dataR = createRandomVector(16, 666);
+    std::vector<float> dataL = SignalGenerator::createWhiteNoise(16, 0.f, 333);
+    std::vector<float> dataR = SignalGenerator::createWhiteNoise(16, 0.f, 666);
     float* rawBuffer[] = { dataL.data(), dataR.data() };
 
     SignalAdapterRaw adaptedRaw(rawBuffer, 2, (int) dataL.size());
@@ -49,7 +51,7 @@ TEST_CASE("SignalAdapters Test std::vector<vector>> Adapter")
 {
     using namespace slb::AudioTraits;
     
-    std::vector<std::vector<float>> vecvec{createRandomVector(16, 333), createRandomVector(16, 666)};
+    std::vector<std::vector<float>> vecvec{SignalGenerator::createWhiteNoise(16, 0.f, 333), SignalGenerator::createWhiteNoise(16, 0.f, 666)};
 
     SignalAdapterStdVecVec adaptedVecVec(vecvec);
     

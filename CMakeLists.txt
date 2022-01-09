@@ -26,7 +26,7 @@ endfunction()
 #### MAIN
 project(AudioTraits
         VERSION 1.0.0
-        DESCRIPTION "A header-only C++ data structure to manage multi-dimensional efficiently and safely"
+        DESCRIPTION "A simple, extensible testing abstraction for audio signals"
         HOMEPAGE_URL "https://github.com/Sidelobe/AudioTraits")
 
 # Set C++ standard to C++14
@@ -57,8 +57,8 @@ target_include_directories(${TEST_NAME} PRIVATE "source")
 target_link_libraries(${TEST_NAME} PUBLIC ${PROJECT_NAME})
 
 # create source groups
-source_group("Sources" FILES ${source})
-source_group("Tests" FILES ${source_test})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_test})
 
 # pass in source directory as 'SOURCE_DIR' define so we can access resources relative to that
 target_compile_definitions(${TEST_NAME} PRIVATE SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR})
@@ -86,7 +86,19 @@ add_subdirectory(test/external-utils/MemorySentinel)
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/MemorySentinel/source)
 target_link_libraries(${TEST_NAME} PRIVATE MemorySentinel)
 
+# AudioFile
 target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/AudioFile)
+
+# Add matplotlib-cpp
+option(MATPLOTLIB "Enable matplotlib-cpp" false)
+if (MATPLOTLIB)
+  message(STATUS "Matplotlib enabled")
+  target_include_directories(${TEST_NAME} SYSTEM PRIVATE test/external-utils/matplotlib-cpp)
+  set(Python3_EXECUTABLE /usr/bin/python3)
+  find_package(Python3 COMPONENTS Development NumPy REQUIRED)
+  target_include_directories(${TEST_NAME} PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
+  target_link_libraries(${TEST_NAME} PRIVATE Python3::Python Python3::NumPy)
+endif()
 
 # Compiler Settings
 target_compile_options(${TEST_NAME} PRIVATE

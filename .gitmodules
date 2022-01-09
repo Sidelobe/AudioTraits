@@ -1,6 +1,6 @@
-[submodule "MemorySentinel"]
-	path = test/external-utils/MemorySentinel
-	url = https://github.com/Sidelobe/MemorySentinel.git
 [submodule "test/external-utils/AudioFile"]
 	path = test/external-utils/AudioFile
 	url = https://github.com/adamstark/AudioFile.git
+[submodule "test/external-utils/MemorySentinel"]
+	path = test/external-utils/MemorySentinel
+	url = https://github.com/Sidelobe/MemorySentinel.git
