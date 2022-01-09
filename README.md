@@ -10,7 +10,7 @@
 ![](https://img.shields.io/badge/C++14-header--only-blue.svg?style=flat&logo=c%2B%2B)
 ![](https://img.shields.io/badge/dependencies-STL_only-blue)
 
-*AudioTraits* is an abstraction designed to make testing of audio processing more convenient and readable. An 'Audio Trait' analyzes a given audio signal (some or all of its channels) and check for a certain property. The result of this check is boolean, which allows this to be easily integrated in any unit test framework.
+*AudioTraits* is an abstraction designed to make testing of audio processing more convenient and readable. An 'Audio Trait' analyzes a given audio signal (some or all of its channels) and checks for a certain property. The result of this check is boolean, which allows this to be easily integrated in any unit test framework.
 
 *AudioTraits* is easily extensible - users can define their own traits and signal adapters.
 
