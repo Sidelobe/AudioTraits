@@ -34,3 +34,4 @@ deploy/build
 
 .DS_Store
 build
+deploy/docu-coverage-report
