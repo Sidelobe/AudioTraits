@@ -9,7 +9,8 @@ import sys
 import os
 import re
 
-system_include_pattern = re.compile(r'#include\s+<(.+)>') # Matches user includes: #include <vector>    
+system_include_pattern = re.compile(r'#include\s+<(.+[^\.][^h])>') # Matches system includes: #include <vector>
+system_c_include_pattern = re.compile(r'#include\s+<(.+\.h)>') # Matches system "C" includes: #include <stdio.h>
 user_include_pattern = re.compile(r'#include\s+\"(.+)\"') # Matches user includes: #include "MyHeader.hpp"
 include_pattern = re.compile(r'(#include\s+[<|\"].+[>|\"])') # Matches all includes
 
@@ -47,24 +48,22 @@ def resolve_include_in_path(include_name, base_dir):
     
 def extract_user_includes(file_name, base_dir, unique_includes):
     """
-    returns a unique list of file names for  "user includes" (resolved recursively), 
-    ignores any <system includes>
+    returns a unique list of file names for  "user includes" 
+    (resolved recursively, depth first). Ignores any <system includes>
     """
     with open(file_name) as f:
         contents = f.read()
         
     for (user_include) in re.findall(user_include_pattern, contents):
         user_include_file = resolve_include_in_path(user_include, base_dir)
+        # recursive call (depth first)
+        extract_user_includes(user_include_file, base_dir, unique_includes)
+        
         if not user_include_file in unique_includes:
             print "Include: \"%s\" ... found %s" %(user_include, user_include_file)
-        else:
-            unique_includes.remove(user_include_file)
-        unique_includes.append(user_include_file)
-            
-        # recursive call
-        extract_user_includes(user_include_file, base_dir, unique_includes)        
+            unique_includes.append(user_include_file)
         
-def extract_system_includes(file_names, unique_system_includes):
+def extract_system_includes(file_names, unique_system_includes, unique_system_c_includes):
         """
         returns a unique list of <system includes> contained in all file_names
         """
@@ -74,10 +73,11 @@ def extract_system_includes(file_names, unique_system_includes):
             for (system_include) in re.findall(system_include_pattern, contents):
                 if not system_include in unique_system_includes:
                     print "System include: <%s>" %  system_include
-                else:
-                    unique_system_includes.remove(system_include)
-                unique_system_includes.append(system_include)
-        
+                    unique_system_includes.append(system_include)
+            for (system_include) in re.findall(system_c_include_pattern, contents):
+                if not system_include in unique_system_c_includes:
+                    print "System \"C\" include: <%s>" %  system_include
+                    unique_system_c_includes.append(system_include)
         
 def main():
     """
@@ -106,9 +106,12 @@ def main():
     print "\nFound chain of %d unique user includes\n" % len(unique_user_includes)
     
     unique_system_includes = []
-    extract_system_includes(unique_user_includes, unique_system_includes)
-    print "\nFound chain of %d unique system includes\n" % len(unique_system_includes)
+    unique_system_c_includes = []
+    extract_system_includes(unique_user_includes, unique_system_includes, unique_system_c_includes)
+    print "\nFound chain of %d unique system includes" % len(unique_system_includes)
+    print "Found chain of %d unique system \"C\" includes\n" % len(unique_system_c_includes)
     unique_system_includes = sorted(unique_system_includes)
+    unique_system_c_includes = sorted(unique_system_c_includes)
     
     # Replace all includes in top-level file with:
     # - list of system includes
@@ -124,15 +127,14 @@ def main():
                 # Add system includes before the first user include
                 for s in unique_system_includes:
                     amalgam.write("#include <" + s + ">\n")
-                amalgam.write("\n")
+                amalgam.write("\nextern \"C\" \n{\n")
+                for s in unique_system_c_includes:
+                    amalgam.write("#include <" + s + ">\n")
+                amalgam.write("}\n")    
                 
-                # add user includes (in reverse order)
-                num_includes = len(unique_user_includes)
-                index = len(unique_user_includes) - 1
-                while index >= 0:
-                    user_include_file = unique_user_includes[index]
+                # add user includes
+                for user_include_file in unique_user_includes:
                     include_file_contents = get_content_without_includes(user_include_file)
-                    index -= 1
                     amalgam.write("\n// MARK: -------- " + os.path.relpath(user_include_file, base_dir) + " --------\n")
                     
                     # if include is a C file, put in 'extern "C"{}''
