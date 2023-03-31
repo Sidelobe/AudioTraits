@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include <type_traits>
 
