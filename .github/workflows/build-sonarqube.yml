@@ -23,7 +23,7 @@ jobs:
     - name: Install sonar-scanner and build-wrapper
       uses: SonarSource/sonarcloud-github-c-cpp@v1
     - name: Setup & Cmake
-      working-directory: ${{runner.workspace}}/deploy
+      working-directory: deploy
       env:
         CXX: ${{matrix.cxx}}
         CXXFLAGS: ${{matrix.cxxflags}}
@@ -36,7 +36,7 @@ jobs:
     - name: Build & Run Tests
       env:
         CTEST_OUTPUT_ON_FAILURE: 1
-      working-directory: ${{runner.workspace}}/deploy/build
+      working-directory: deploy/build
       run: |
         build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }}  make -j 4
         ./AudioTraitsTest
