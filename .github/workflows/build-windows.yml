@@ -1,0 +1,41 @@
+name: Sidelobe Build Matrix Windows
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  build:
+    name: ${{matrix.os}}, MSVC, C++${{matrix.std}}, ${{matrix.build_type}}, ${{matrix.platform}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [windows-2022]
+        platform: [x64]
+        build_type: [Debug]
+        std: [14]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+      - name: Setup & Cmake
+        working-directory: ${{runner.workspace}}\deploy
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
+            -DCMAKE_CXX_STANDARD=${{matrix.std}} \
+            -A ${{matrix.platform}}   ../..
+            
+      - name: Build
+        working-directory: ${{runner.workspace}}\deploy\build
+        run: cmake --build . --config ${{matrix.build_type}} --parallel %NUMBER_OF_PROCESSORS%
+        shell: cmd
+
+      - name: Run tests
+        working-directory: ${{runner.workspace}}/build
+        env:
+            CTEST_OUTPUT_ON_FAILURE: 1
+        run: ctest -C ${{matrix.build_type}} -j %NUMBER_OF_PROCESSORS%
+        shell: cmd
