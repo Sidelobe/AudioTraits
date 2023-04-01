@@ -20,7 +20,7 @@ jobs:
         with:
           submodules: 'true'
       - name: Setup & Cmake
-        working-directory: ${{runner.workspace}}\deploy
+        working-directory: $GITHUB_WORKSPACE/deploy
         run: |
           mkdir -p build
           cd build
@@ -29,7 +29,7 @@ jobs:
             -A ${{matrix.platform}}   ../..
             
       - name: Build
-        working-directory: ${{runner.workspace}}\deploy\build
+        working-directory: $GITHUB_WORKSPACE/deploy/build
         run: cmake --build . --config ${{matrix.build_type}} --parallel %NUMBER_OF_PROCESSORS%
         shell: cmd
 
