@@ -22,12 +22,13 @@ jobs:
       - name: Setup & Cmake
         working-directory: deploy
         run: |
+          dir
           mkdir -p build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
-            -DCMAKE_CXX_STANDARD=${{matrix.std}} \
-            -A ${{matrix.platform}} ../..
-        shell: cmd
+          cmake -DCMAKE_BUILD_TYPE=${{matrix.build_type}} `
+                -DCMAKE_CXX_STANDARD=${{matrix.std}} `
+                -A ${{matrix.platform}} `
+                ../..
             
       - name: Build
         working-directory: deploy/build
@@ -35,7 +36,7 @@ jobs:
         shell: cmd
 
       - name: Run tests
-        working-directory: ${{runner.workspace}}/build
+        working-directory: deploy/build
         env:
             CTEST_OUTPUT_ON_FAILURE: 1
         run: ctest -C ${{matrix.build_type}} -j %NUMBER_OF_PROCESSORS%
