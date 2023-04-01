@@ -71,7 +71,7 @@ jobs:
         if: ${{ matrix.config.coverage == 'false'  && runner.os == 'Windows' }}
         run: |
           make -j 4
-          ./${{ matrix.config.build_type }}/AudioTraitsTest.exe
+          ${{ matrix.config.build_type }}/AudioTraitsTest.exe
           
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v1
