@@ -15,20 +15,23 @@ jobs:
         - {
             name: "Windows Latest MSVC",
             os: windows-latest,
-            build_type: "Release", cc: "cl", cxx: "cl",
+            build_type: "Release",
+            cc: "cl", cxx: "cl",
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
             coverage: 'false'
           }
         - {
             name: "Ubuntu Latest GCC",
             os: ubuntu-latest,
-            build_type: "Release", cc: "gcc", cxx: "g++",
+            build_type: ${{ fromJson("Release", "Debug") }},
+            cc: "gcc", cxx: "g++",
             coverage: 'true'
           }
         - {
             name: "macOS Latest Clang",
             os: macos-latest,
-            build_type: "Release", cc: "clang", cxx: "clang++", 
+            build_type: "Release", 
+            cc: "clang", cxx: "clang++", 
             coverage: 'false'
           }
     env:
@@ -43,7 +46,7 @@ jobs:
           cd deploy
           mkdir -p build
           cd build
-          cmake -H. -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=${{ matrix.config.coverage }} ../..
+          cmake -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=${{ matrix.config.coverage }} ../..
         
       - name: Build & Run Tests
         if: ${{ matrix.config.coverage == 'false' }}
@@ -63,7 +66,7 @@ jobs:
           #mkdir -p report
           #gcovr -r .. -f ../source  --exclude-unreachable-branches --exclude-throw-branches --sonarqube -o report/coverage.xml  # Generate coverage report
       - name: Run sonar-scanner
-        if: ${{ matrix.config.coverage == 'true' }}
+        if: ${{ matrix.config.coverage == 'true ' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
