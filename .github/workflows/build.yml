@@ -65,9 +65,8 @@ jobs:
           CTEST_OUTPUT_ON_FAILURE: 1
         working-directory: 'deploy/build'
         run: |
-          dir 
-          make -j 4
-          ctest -C ${{ matrix.config.build_type }} -L AudioTraitsTest -j 2
+          cmake --build . --parallel 4
+          ctest -C ${{ matrix.config.build_type }} -L AudioTraitsTest -j 4
 
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v1
