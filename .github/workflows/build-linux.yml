@@ -37,13 +37,13 @@ jobs:
         mkdir -p build
         cd build
         cmake -DCMAKE_CXX_STANDARD=${{matrix.std}} \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
               ../..
         
     - name: Build & Run Tests
       env:
         CTEST_OUTPUT_ON_FAILURE: 1
-      working-directory: deploy/build'
+      working-directory: deploy/build
       run: |
-        cmake --build build --parallel 2
+        cmake --build . --parallel 2
         ctest -C ${{ matrix.build_type }} -L AudioTraitsTest -j 2
