@@ -8,8 +8,10 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cstdlib>
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include <type_traits>
 
