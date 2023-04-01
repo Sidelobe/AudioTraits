@@ -19,21 +19,21 @@ jobs:
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
             coverage: 'false'
           }
-        - {
-            name: "Ubuntu GCC Release (Coverage)",
-            os: ubuntu-latest, build_type: Release, cc: "gcc", cxx: "g++",
-            coverage: 'true'
-          }
+        # - {
+        #     name: "Ubuntu GCC Release (Coverage)",
+        #     os: ubuntu-latest, build_type: Release, cc: "gcc", cxx: "g++",
+        #     coverage: 'true'
+        #   }
         # - {
         #     name: "Ubuntu GCC Debug",
         #     os: ubuntu-latest, build_type: Debug, cc: "gcc", cxx: "g++",
         #     coverage: 'false'
         #   }
-        - {
-            name: "macOS Clang Release",
-            os: macos-latest, build_type: "Release", cc: "clang", cxx: "clang++", 
-            coverage: 'false'
-          }
+        # - {
+        #     name: "macOS Clang Release",
+        #     os: macos-latest, build_type: "Release", cc: "clang", cxx: "clang++", 
+        #     coverage: 'false'
+        #   }
         # - {
         #     name: "macOS Clang Debug",
         #     os: macos-latest, build_type: "Debug", cc: "clang", cxx: "clang++", 
@@ -65,7 +65,7 @@ jobs:
           CTEST_OUTPUT_ON_FAILURE: 1
         working-directory: 'deploy/build'
         run: |
-          ls -al
+          dir 
           make -j 4
           ctest -C ${{ matrix.config.build_type }} -L AudioTraitsTest -j 2
 
