@@ -52,7 +52,7 @@ public:
     const float* const* getData() const override { return m_signal; }
     std::vector<float> getChannelDataCopy(int channelIndex) const override
     {
-        ASSERT(channelIndex < m_numChannels);
+        SLB_ASSERT(channelIndex < m_numChannels);
         return { m_signal[channelIndex], m_signal[channelIndex] + m_numSamples };
     }
     
@@ -74,7 +74,7 @@ public:
     {
         
         for (int i = 0; i < static_cast<int>(vector2D.size()); ++i) {
-            ASSERT(m_vector2D.at(i).size() == m_vector2D.at(0).size(), "All channels should be of equal length!");
+            SLB_ASSERT(m_vector2D.at(i).size() == m_vector2D.at(0).size(), "All channels should be of equal length!");
             m_channelPointers[i] = m_vector2D[i].data();
         }
     }

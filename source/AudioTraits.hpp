@@ -24,10 +24,10 @@ namespace AudioTraits {
 template<typename F, typename ... Is>
 static bool check(const ISignal& signal, const ChannelSelection& channelSelection, Is&& ... traitParams)
 {
-    ASSERT(signal.getNumSamples() > 0);
+    SLB_ASSERT(signal.getNumSamples() > 0);
     std::set<int> selectedChannels = channelSelection.get();
-    ASSERT(selectedChannels.size() <= signal.getNumChannels());
-    std::for_each(selectedChannels.begin(), selectedChannels.end(), [&signal](auto& i) { ASSERT(i<=signal.getNumChannels()); });
+    SLB_ASSERT(selectedChannels.size() <= signal.getNumChannels());
+    std::for_each(selectedChannels.begin(), selectedChannels.end(), [&signal](auto& i) { SLB_ASSERT(i<=signal.getNumChannels()); });
 
     // Empty selection means all channels
     if (selectedChannels.empty()) {
@@ -43,7 +43,7 @@ static bool check(const ISignal& signal, const ChannelSelection& channelSelectio
 /** @returns true if a >= b (taking into account tolerance [dB]) */
 static inline bool areVectorsEqual(const std::vector<float>& a, const std::vector<float>& b, float tolerance_dB)
 {
-    ASSERT(a.size() == b.size(), "Vectors must be of equal length for comparison");
+    SLB_ASSERT(a.size() == b.size(), "Vectors must be of equal length for comparison");
     return std::equal(a.begin(), a.end(), b.begin(), [&tolerance_dB](float v1, float v2)
     {
         float error = std::abs(Utils::linear2Db(std::abs(v1)) - Utils::linear2Db(std::abs(v2)));
@@ -88,11 +88,11 @@ struct IsDelayedVersionOf
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, const ISignal& referenceSignal,
                      int delay_samples, float amplitudeTolerance_dB = 0.f, int timeTolerance_samples = 0)
     {
-        ASSERT(delay_samples >= 0, "The delay must be positive");
-        ASSERT(amplitudeTolerance_dB >= 0 && amplitudeTolerance_dB < 96.f, "Invalid amplitude tolerance");
-        ASSERT(timeTolerance_samples >= 0 && timeTolerance_samples <= 5, "Time tolerance has to be between 0 and 5 samples");
-        ASSERT((static_cast<float>(delay_samples)/signal.getNumSamples()) < .8f, "The delay cannot be longer than 80% of the signal");
-        ASSERT(referenceSignal.getNumSamples() >= signal.getNumSamples() - delay_samples, "The reference signal is not long enough");
+        SLB_ASSERT(delay_samples >= 0, "The delay must be positive");
+        SLB_ASSERT(amplitudeTolerance_dB >= 0 && amplitudeTolerance_dB < 96.f, "Invalid amplitude tolerance");
+        SLB_ASSERT(timeTolerance_samples >= 0 && timeTolerance_samples <= 5, "Time tolerance has to be between 0 and 5 samples");
+        SLB_ASSERT((static_cast<float>(delay_samples)/signal.getNumSamples()) < .8f, "The delay cannot be longer than 80% of the signal");
+        SLB_ASSERT(referenceSignal.getNumSamples() >= signal.getNumSamples() - delay_samples, "The reference signal is not long enough");
 
         for (int chNumber : selectedChannels) {
             std::vector<float> channelSignal = signal.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
@@ -140,7 +140,7 @@ struct HasIdenticalChannels
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels, float tolerance_dB = 0.f)
     {
-        ASSERT(tolerance_dB >= 0 && tolerance_dB < 96.f, "Invalid amplitude tolerance");
+        SLB_ASSERT(tolerance_dB >= 0 && tolerance_dB < 96.f, "Invalid amplitude tolerance");
         
         bool doAllChannelsMatch = true;
         std::vector<float> reference(0); // init with size 0
@@ -168,7 +168,7 @@ struct HaveIdenticalChannels
 {
     static bool eval(const ISignal& signalA, const std::set<int>& selectedChannels, const ISignal& signalB, float tolerance_dB = 0.f)
     {
-        ASSERT(tolerance_dB >= 0 && tolerance_dB < 96.f, "Invalid amplitude tolerance");
+        SLB_ASSERT(tolerance_dB >= 0 && tolerance_dB < 96.f, "Invalid amplitude tolerance");
         
         for (int chNumber : selectedChannels) {
             std::vector<float> channelSignalA = signalA.getChannelDataCopy(chNumber - 1); // channels are 1-based, indices 0-based
