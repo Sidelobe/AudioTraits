@@ -65,6 +65,7 @@ jobs:
           CTEST_OUTPUT_ON_FAILURE: 1
         working-directory: 'deploy/build'
         run: |
+          ls -al
           make -j 4
           ctest -C ${{ matrix.config.build_type }} -L AudioTraitsTest -j 2
 
