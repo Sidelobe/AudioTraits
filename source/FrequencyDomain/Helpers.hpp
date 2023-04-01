@@ -44,8 +44,8 @@ inline std::set<int> determineCorrespondingBins(const FreqBand& frequencyRange, 
     float freqEnd = std::get<1>(frequencyRange.get());
     int expectedBinStart = static_cast<int>(std::floor(freqStart / sampleRate * fftLength));
     int expectedBinEnd = static_cast<int>(std::ceil(freqEnd / sampleRate * fftLength));
-    ASSERT(expectedBinStart >= 0, "invalid frequency range");
-    ASSERT(expectedBinEnd < numBins, "frequency range too high for this sampling rate");
+    SLB_ASSERT(expectedBinStart >= 0, "invalid frequency range");
+    SLB_ASSERT(expectedBinEnd < numBins, "frequency range too high for this sampling rate");
     
     for (int i=expectedBinStart; i <= expectedBinEnd; ++i) {
         bins.insert(i);
@@ -94,7 +94,7 @@ inline std::vector<float> getNormalizedBinValues(std::vector<float>& channelSign
         }
         
         // accumulate: accumulatedBins += binValues
-        ASSERT(binValuesForChunk.size() == accumulatedBins.size());
+        SLB_ASSERT(binValuesForChunk.size() == accumulatedBins.size());
         for (int k=0; k < accumulatedBins.size(); ++k) {
             accumulatedBins[k] += binValuesForChunk[k];
         }

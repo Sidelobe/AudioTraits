@@ -24,7 +24,7 @@ public:
     /** Discrete component (deliberately non-explicit ctor) */
     FreqBand(float frequencyComponent) : m_range{std::make_pair(frequencyComponent, frequencyComponent)}
     {
-        ASSERT(frequencyComponent > 0 , "invalid frequency component");
+        SLB_ASSERT(frequencyComponent > 0 , "invalid frequency component");
     }
     
     /**
@@ -33,9 +33,9 @@ public:
      */
     FreqBand(float lowerBound, float uppperBound) : m_range{std::make_pair(lowerBound, uppperBound)}
     {
-        ASSERT(uppperBound > lowerBound, "invalid range!");
-        ASSERT(lowerBound > 0, "invalid lower bound!");
-        ASSERT(uppperBound > 0, "invalid upper bound!");
+        SLB_ASSERT(uppperBound > lowerBound, "invalid range!");
+        SLB_ASSERT(lowerBound > 0, "invalid lower bound!");
+        SLB_ASSERT(uppperBound > 0, "invalid upper bound!");
     }
     
     Bounds get() const { return m_range; }
