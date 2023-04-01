@@ -20,16 +20,17 @@ jobs:
         with:
           submodules: 'true'
       - name: Setup & Cmake
-        working-directory: $GITHUB_WORKSPACE/deploy
+        working-directory: deploy
         run: |
           mkdir -p build
           cd build
           cmake -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
             -DCMAKE_CXX_STANDARD=${{matrix.std}} \
-            -A ${{matrix.platform}}   ../..
+            -A ${{matrix.platform}} ../..
+        shell: cmd
             
       - name: Build
-        working-directory: $GITHUB_WORKSPACE/deploy/build
+        working-directory: deploy/build
         run: cmake --build . --config ${{matrix.build_type}} --parallel %NUMBER_OF_PROCESSORS%
         shell: cmd
 
