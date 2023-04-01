@@ -53,11 +53,11 @@ template<typename T>
 static std::vector<T> createBandLimitedNoise(int length, slb::FreqBand band, float sampleRate, float gain_dB = 0.0, int seed=0)
 {
     // TODO: Implement this cleanly. overlapp-add ?
-    ASSERT_ALWAYS("NOT YET IMPLEMENTED");
+    SLB_ASSERT_ALWAYS("NOT YET IMPLEMENTED");
     
     std::vector<T> noise = createWhiteNoise(length, gain_dB, seed);
 
-    ASSERT(sampleRate > 0);
+    SLB_ASSERT(sampleRate > 0);
         
     // check out:
     // https://s3.amazonaws.com/embeddedrelated/user/6420/sdr_narrowband_noise_4_69237.pdf
@@ -101,7 +101,7 @@ static std::vector<T> createBandLimitedNoise(int length, slb::FreqBand band, flo
             }
 
             auto filteredChunkTD = fft.performInverse(bins);
-            ASSERT(filteredChunkTD.size() == chunkSize);
+            SLB_ASSERT(filteredChunkTD.size() == chunkSize);
             
             auto chunkBeginBandLimited = bandLimitedNoise.begin() + chunkIndex * chunkSize;
             std::copy(filteredChunkTD.begin(), filteredChunkTD.end(), chunkBeginBandLimited);

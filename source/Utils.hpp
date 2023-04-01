@@ -22,7 +22,7 @@
 #define __has_feature(x) 0
 #endif
 #if !__has_feature(cxx_exceptions) && !defined(__cpp_exceptions) && !defined(__EXCEPTIONS) && !defined(_CPPUNWIND)
-  #define EXCEPTIONS_DISABLED
+  #define SLB_EXCEPTIONS_DISABLED
 #endif
 
 namespace slb
@@ -31,11 +31,11 @@ namespace slb
 // MARK: - Assertion handling
 namespace Assertions
 {
-#ifndef ASSERT
-    #define ASSERT(condition, ...) Assertions::handleAssert(#condition, condition, __FILE__, __LINE__, ##__VA_ARGS__)
+#ifndef SLB_ASSERT
+    #define SLB_ASSERT(condition, ...) Assertions::handleAssert(#condition, condition, __FILE__, __LINE__, ##__VA_ARGS__)
 #endif
-#ifndef ASSERT_ALWAYS
-    #define ASSERT_ALWAYS(...) Assertions::handleAssert("", false, __FILE__, __LINE__, ##__VA_ARGS__)
+#ifndef SLB_ASSERT_ALWAYS
+    #define SLB_ASSERT_ALWAYS(...) Assertions::handleAssert("", false, __FILE__, __LINE__, ##__VA_ARGS__)
 #endif
 
 /**
@@ -50,7 +50,7 @@ static constexpr void handleAssert(const char* conditionAsText, bool condition, 
         return;
     }
     
-#ifdef EXCEPTIONS_DISABLED
+#ifdef SLB_EXCEPTIONS_DISABLED
     UNUSED(conditionAsText); UNUSED(file); UNUSED(line); UNUSED(message);
     assert(0 && message);
 #else

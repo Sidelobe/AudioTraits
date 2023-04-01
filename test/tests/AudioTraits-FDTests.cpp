@@ -265,7 +265,7 @@ TEST_CASE("AudioTraits::FrequencyDomain: noise tests")
     SECTION("Band-limited Noise (filtered)")
     {
         AudioFile<float> bandlimitedNoise(std::string(TOSTRING(SOURCE_DIR)) + "/test/test_data/BandLimitedNoise_1k_4k.wav");
-        ASSERT(bandlimitedNoise.getSampleRate() == sampleRate);
+        SLB_ASSERT(bandlimitedNoise.getSampleRate() == sampleRate);
 
         const float gain_dB = 0.f; // hard-coded into file
         constexpr float lowerFreq = 1000;
