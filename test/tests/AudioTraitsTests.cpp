@@ -50,12 +50,6 @@ private:
     const int m_numSamples;
 };
 
-TEST_CASE("AudioTraits Deliberate Failure")
-{
-    REQUIRE(false);
-}
-
-
 TEST_CASE("AudioTraits Generic Tests")
 {
     DummyTrait::called = false;
