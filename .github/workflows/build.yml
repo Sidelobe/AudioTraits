@@ -52,7 +52,7 @@ jobs:
           cd deploy
           mkdir -p build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DCODE_COVERAGE=${{ matrix.config.coverage }} ../..
+          cmake -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCODE_COVERAGE=${{matrix.config.coverage}} ../..
       - name: Install Toolchain
         if: ${{ matrix.config.coverage == 'true' }}
         run: |
@@ -65,7 +65,7 @@ jobs:
           CTEST_OUTPUT_ON_FAILURE: 1
         working-directory: 'deploy/build'
         run: |
-          cmake --build . --parallel 4
+          cmake --build . -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} --parallel 4
           ctest -C ${{ matrix.config.build_type }} -L AudioTraitsTest -j 4
 
       - name: Install sonar-scanner and build-wrapper
@@ -75,7 +75,7 @@ jobs:
         working-directory: deploy/build
         if: ${{ matrix.config.coverage == 'true' }}
         run: |
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }}  make -j 4
+          build-wrapper-linux-x86-64 --out-dir ${{env.BUILD_WRAPPER_OUT_DIR}}  make -j 4
           ./AudioTraitsTest
           cd ..
           mkdir -p report
