@@ -13,8 +13,8 @@ jobs:
     strategy:
       matrix:
         os: [windows-2022]
-        platform: [x64]
-        build_type: [Debug, Release]
+        platform: [x64, arm64]
+        build_type: [Debug]
         std: [14]
     steps:
       - uses: actions/checkout@v3
