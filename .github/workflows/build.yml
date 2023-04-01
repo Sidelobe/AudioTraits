@@ -24,21 +24,21 @@ jobs:
             os: ubuntu-latest, build_type: Release, cc: "gcc", cxx: "g++",
             coverage: 'true'
           }
-        - {
-            name: "Ubuntu GCC Debug",
-            os: ubuntu-latest, build_type: Debug, cc: "gcc", cxx: "g++",
-            coverage: 'false'
-          }
+        # - {
+        #     name: "Ubuntu GCC Debug",
+        #     os: ubuntu-latest, build_type: Debug, cc: "gcc", cxx: "g++",
+        #     coverage: 'false'
+        #   }
         - {
             name: "macOS Clang Release",
             os: macos-latest, build_type: "Release", cc: "clang", cxx: "clang++", 
             coverage: 'false'
           }
-        - {
-            name: "macOS Latest Clang Debug",
-            os: macos-latest, build_type: "Debug", cc: "clang", cxx: "clang++", 
-            coverage: 'false'
-          }
+        # - {
+        #     name: "macOS Clang Debug",
+        #     os: macos-latest, build_type: "Debug", cc: "clang", cxx: "clang++", 
+        #     coverage: 'false'
+        #   }
           
     env:
       BUILD_WRAPPER_OUT_DIR: '$GITHUB_WORKSPACE/deploy/build/bw-output' # Directory where build-wrapper output will be placed
@@ -61,18 +61,13 @@ jobs:
           gcovr --version
       
       - name: Build & Run Tests
+        env:
+          CTEST_OUTPUT_ON_FAILURE: 1
         working-directory: deploy/build
-        if: ${{ matrix.config.coverage == 'false'  && runner.os != 'Windows' }}
         run: |
           make -j 4
-          ./AudioTraitsTest
-      - name: Build & Run Tests
-        working-directory: deploy/build
-        if: ${{ matrix.config.coverage == 'false'  && runner.os == 'Windows' }}
-        run: |
-          make -j 4
-          ${{ matrix.config.build_type }}/AudioTraitsTest.exe
-          
+          ctest -C ${{matrix.build_type}} -j 2
+
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v1
         if: ${{ matrix.config.coverage == 'true' }}
