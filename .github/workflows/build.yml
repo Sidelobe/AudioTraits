@@ -31,7 +31,7 @@ jobs:
         #     build_type: "Release", cc: "clang", cxx: "clang++"
         #   }
     env:
-      BUILD_WRAPPER_OUT_DIR: 'deploy/build/bw-output' # Directory where build-wrapper output will be placed
+      BUILD_WRAPPER_OUT_DIR: '$GITHUB_WORKSPACE/deploy/build/bw-output' # Directory where build-wrapper output will be placed
     steps:
       - uses: actions/checkout@v3
         with:
