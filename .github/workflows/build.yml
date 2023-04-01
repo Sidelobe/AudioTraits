@@ -31,7 +31,7 @@ jobs:
         #     build_type: "Release", cc: "clang", cxx: "clang++"
         #   }
     env:
-      BUILD_WRAPPER_OUT_DIR: deploy/build/bw-output # Directory where build-wrapper output will be placed
+      BUILD_WRAPPER_OUT_DIR: 'deploy/build/bw-output' # Directory where build-wrapper output will be placed
     steps:
       - uses: actions/checkout@v3
         with:
@@ -42,6 +42,7 @@ jobs:
           cd deploy
           mkdir -p build
           cd build
+          mkdir -p bw-output
           cmake -H. -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=No ../..
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v1
