@@ -25,6 +25,14 @@
   #define SLB_EXCEPTIONS_DISABLED
 #endif
 
+// GCC
+//  Bug 67371 - Never executed "throw" in constexpr function fails to compile
+//  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
+//  Fixed for GCC 9.
+#if defined(__GNUC__) && (__GNUC__ < 9)
+#   define BUG_67371
+#endif
+
 namespace slb
 {
 
@@ -44,7 +52,11 @@ namespace Assertions
  * @note: this assertion handler is constexpr - to allow its use inside constexpr functions.
  * The handler will still be evaluated at runtime, but memory is only allocated IF the assertion is triggered.
  */
+#ifdef BUG_67371
+static void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
+#else
 static constexpr void handleAssert(const char* conditionAsText, bool condition, const char* file, int line, const char* message = "")
+#endif
 {
     if (condition == true) {
         return;
