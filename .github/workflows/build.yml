@@ -53,13 +53,22 @@ jobs:
           mkdir -p build
           cd build
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DCODE_COVERAGE=${{ matrix.config.coverage }} ../..
-        
+      - name: Install Toolchain
+        if: ${{ matrix.config.coverage == 'true' }}
+        run: |
+          pip3 install gcovr
+          echo "Gcovr Updated!"
+          gcovr --version
+      
       - name: Build & Run Tests
         working-directory: deploy/build
         if: ${{ matrix.config.coverage == 'false' }}
         run: |
           make -j 4
-          ./AudioTraitsTest
+          if: ${{ runner.os == 'Windows' }}
+            ./${{ matrix.config.build_type }}/AudioTraitsTest.exe
+          else:
+            ./AudioTraitsTest
           
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v1
