@@ -25,7 +25,7 @@ jobs:
           cmake --build . --parallel 2
           ctest -C ${{ matrix.build_type }} -L AudioTraitsTest -j 2
       - name: Check single_include header
-        run:
+        run: |
           if git status --porcelain --untracked-files=no "single_include/AudioTraits.hpp"; then
             echo "Single-include header needs to be updated -- please run deploy/generate_single_header_include.sh and commit the changes"
             exit -1
