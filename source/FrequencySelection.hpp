@@ -21,7 +21,10 @@ class FreqBand
 public:
     using Bounds = std::pair<float, float>;
     
-    /** Discrete component (deliberately non-explicit ctor) */
+    /**
+     * Discrete frequency component (deliberately non-explicit ctor).
+     * Treated as a range with equal upper and lower bound.
+     */
     FreqBand(float frequencyComponent) : m_range{std::make_pair(frequencyComponent, frequencyComponent)}
     {
         SLB_ASSERT(frequencyComponent > 0 , "invalid frequency component");

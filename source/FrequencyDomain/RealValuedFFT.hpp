@@ -80,7 +80,7 @@ public:
         DSPF_sp_fftSPxSP(N, reinterpret_cast<float*>(pseudoComplexInput.data()),
                          reinterpret_cast<float*>(m_twiddleTable.data()),
                          reinterpret_cast<float*>(complexOutput.data()),
-                         const_cast<unsigned char*>(static_cast<const unsigned char*>(brev.data())),
+                         const_cast<unsigned char*>(brev_data),
                          m_radix, offset, N);
 
         std::vector<std::complex<float>> freqDomainBuffer(m_fftLength+1); // entire length +1 required for calculation
@@ -111,7 +111,7 @@ public:
         DSPF_sp_ifftSPxSP(N, reinterpret_cast<float*>(tempComplexBuffer.data()),
                           reinterpret_cast<float*>(m_twiddleTable.data()),
                           reinterpret_cast<float*>(timeDomainBuffer.data()),
-                          const_cast<unsigned char*>(static_cast<const unsigned char*>(brev.data())),
+                          const_cast<unsigned char*>(brev_data),
                           m_radix, offset, N);
         
         // TODO: make buffers members so there's no allocation

@@ -28,7 +28,7 @@ constexpr int numBins = fftLength / 2 + 1;
 template<typename T=float>
 inline void applyHannWindow(std::vector<T>& channelSignal)
 {
-    int i=0;
+    int i = 0;
     for (auto& sample : channelSignal) {
         double window = 0.5 * (1 - std::cos(2*M_PI * i++ / (channelSignal.size()-1)));
         sample *= static_cast<T>(window);
@@ -36,7 +36,7 @@ inline void applyHannWindow(std::vector<T>& channelSignal)
 }
 
 /** Create list of bins that correspond to one FrequencyRange */
-inline std::set<int> determineCorrespondingBins(const FreqBand& frequencyRange, float sampleRate)
+static inline std::set<int> determineCorrespondingBins(const FreqBand& frequencyRange, float sampleRate)
 {
     std::set<int> bins;
     
@@ -54,7 +54,7 @@ inline std::set<int> determineCorrespondingBins(const FreqBand& frequencyRange, 
 }
 
 /** Create an aggregated list of bins that correspond to all in bands in the selection */
-inline std::set<int> determineCorrespondingBins(const Freqs& frequencySelection, float sampleRate)
+static inline std::set<int> determineCorrespondingBins(const Freqs& frequencySelection, float sampleRate)
 {
     std::set<int> bins;
     
@@ -66,7 +66,7 @@ inline std::set<int> determineCorrespondingBins(const Freqs& frequencySelection,
 }
 
 /** @returns the absolute values of the bin contents for a given signal, normalized to the highest-valued bin */
-inline std::vector<float> getNormalizedBinValues(std::vector<float>& channelSignal)
+static inline std::vector<float> getNormalizedBinValues(std::vector<float>& channelSignal)
 {
     // TODO: use overlap-add for cleaner results (?)
 

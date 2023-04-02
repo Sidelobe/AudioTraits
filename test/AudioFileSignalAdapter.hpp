@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include "SignalAdapters.hpp"
+#include "AudioTraits.hpp"
+//#include "SignalAdapters.hpp"
 
 #include "AudioFile.h" // include https://github.com/adamstark/AudioFile
 
