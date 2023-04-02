@@ -12,8 +12,9 @@
 #include <vector>
 
 #include "AudioTraits.hpp"
-#include "Utils.hpp"
-#include "AudioFileSignalAdapter.hpp"
+#include "AudioFile.h"
+//#include "Utils.hpp"
+//#include "AudioFileSignalAdapter.hpp"
 
 //#include "matplotlibcpp.h"
 

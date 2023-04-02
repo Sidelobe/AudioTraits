@@ -3,12 +3,13 @@
 cd -- "$(dirname "$BASH_SOURCE")"
 
 rm -rf build/coverage
-mkdir build/coverage
+mkdir -p build
+mkdir -p build/coverage
 cd build/coverage
 
 find . -maxdepth 10 -type f  \( -name \*.gcno -o -name \*.gcda \) -delete
  
-cmake -H. -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=yes ../../..
+cmake -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=yes ../../..
 make
 ./AudioTraitsTest
 
