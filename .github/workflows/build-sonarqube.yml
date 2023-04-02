@@ -1,12 +1,6 @@
 name: Sidelobe Build Sonarqube
 on:
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
-    types: [opened, synchronize, reopened]
-    
+  workflow_call:
 jobs:
   build:
     name: Linux, GCC, Release, Coverage & SonarQube

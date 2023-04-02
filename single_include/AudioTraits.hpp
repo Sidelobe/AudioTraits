@@ -28,8 +28,6 @@ extern "C"
 #include <math.h>
 }
 
-// ADD SOME CHANGES HERE TO TEST GITHUB ACTION
-
 // MARK: -------- Utils.hpp --------
 //
 //  ╔═╗┬ ┬┌┬┐┬┌─┐╔╦╗┬─┐┌─┐┬┌┬┐┌─┐

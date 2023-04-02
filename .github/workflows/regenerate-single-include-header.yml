@@ -1,13 +1,8 @@
-name: Create/Test Single-Include Header [on PR Merge]
+name: Create/Test Single-Include Header
 on:
-  pull_request:
-    types:
-      - closed
-    branches:
-      - develop    
+  workflow_call:
 jobs:
-  regenerate-header:
-    if: github.event.pull_request.merged == true
+  check-single-include:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -29,11 +24,12 @@ jobs:
         run: |
           cmake --build . --parallel 2
           ctest -C ${{ matrix.build_type }} -L AudioTraitsTest -j 2
-      - name: Commit amalgamated file to GIT
+      - name: Check single_include header
         run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
-          git add "single_include/AudioTraits.hpp"
-          git commit -m "Re-generated single include header"
-          git push origin develop
+          if [[ `git status --porcelain --untracked-files=no single_include/AudioTraits.hpp` ]]; then
+            echo "Single-include header needs to be updated -- please run deploy/generate_single_header_include.sh and commit the changes"
+            exit -1
+          else
+            echo "Single-include header is up-to-date"
+          fi
           
