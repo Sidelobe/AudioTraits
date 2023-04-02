@@ -26,8 +26,6 @@ jobs:
           ctest -C ${{ matrix.build_type }} -L AudioTraitsTest -j 2
       - name: Check single_include header
         run:
-          #!/bin/bash
-          set -euxo pipefail
           if [[ `git status --porcelain --untracked-files=no single_include/AudioTraits.hpp` ]]; then
             echo "Single-Include file needs to be updated -- please run deploy/generate_single_header_include.sh and commit the changes"
             exit -1
