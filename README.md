@@ -87,10 +87,9 @@ struct HasOddNumberOfSamples
 
  - C++14, STL only
  - Compiled & Tested with:
- 	- GCC/g++ 9.3.0 (Linux) for `x86_64` and `ARM64` architectures
-	- Clang 11 (Xcode 11.6, macos)
-	- MSVC++ 19.28 (Visual Studio 2019, Windows) 
-
+ 	- Linux / macos / Windwos
+ 	- GCC, Clang and MSVC
+ 	- `x86_64` and `arm64` architectures
 	
 ### Build Status / Quality Metrics
 
