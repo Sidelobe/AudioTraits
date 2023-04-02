@@ -98,6 +98,20 @@ static constexpr void handleAssert(const char* conditionAsText, bool condition, 
 namespace Utils
 {
 
+static inline float dB2Linear(float value_dB)
+{
+    return std::pow(10.f, (value_dB/20.f));
+}
+
+static inline float linear2Db(float value_linear)
+{
+    // avoid log(0)
+    if (value_linear > 0.f) {
+        return 20.f * std::log10(value_linear);
+    }
+    return std::numeric_limits<float>::lowest();
+}
+
 /**
  * @note from: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
  */
