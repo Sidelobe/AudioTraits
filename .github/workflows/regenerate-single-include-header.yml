@@ -4,10 +4,7 @@ on:
     types:
       - closed
     branches:
-      - develop
-  pull_request:
-    types: [opened, synchronize, reopened]
-    
+      - develop    
 jobs:
   if_merged:
     if: github.event.pull_request.merged == true
