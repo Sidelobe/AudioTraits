@@ -60,7 +60,7 @@ def extract_user_includes(file_name, base_dir, unique_includes):
         extract_user_includes(user_include_file, base_dir, unique_includes)
         
         if not user_include_file in unique_includes:
-            print "Include: \"%s\" ... found %s" %(user_include, user_include_file)
+            print ("Include: \"%s\" ... found %s" %(user_include, user_include_file))
             unique_includes.append(user_include_file)
         
 def extract_system_includes(file_names, unique_system_includes, unique_system_c_includes):
@@ -72,11 +72,11 @@ def extract_system_includes(file_names, unique_system_includes, unique_system_c_
                 contents = f.read()
             for (system_include) in re.findall(system_include_pattern, contents):
                 if not system_include in unique_system_includes:
-                    print "System include: <%s>" %  system_include
+                    print("System include: <%s>" %  system_include)
                     unique_system_includes.append(system_include)
             for (system_include) in re.findall(system_c_include_pattern, contents):
                 if not system_include in unique_system_c_includes:
-                    print "System \"C\" include: <%s>" %  system_include
+                    print("System \"C\" include: <%s>" %  system_include)
                     unique_system_c_includes.append(system_include)
         
 def main():
@@ -85,31 +85,35 @@ def main():
     It tries to resolve the includes by recursively searching in subdirectories
     of the provided top-level include file.
     
-    usage:  amalgamate.py topLevelInclude.hpp
-    output: topLevelInclude_amalgamated.hpp
+    usage:  amalgamate.py topLevelInclude.hpp [amalgamatedOutput.hpp]
+    
+    default output: topLevelInclude_amalgamated.hpp (same folder as input)
     """
     if len(sys.argv) < 2:
         raise SyntaxError("Not enough arguments! Must provide top-level include .hpp")
     
     file_name = sys.argv[1]
     base_dir = os.path.dirname(os.path.abspath(file_name))
+        
+    if len(sys.argv) == 3:
+        out_file_name = sys.argv[2]
+    else:
+        file_name_ext = os.path.splitext(file_name)
+        out_file_name = file_name_ext[0] + "_amalgamated" + file_name_ext[1]
     
-    file_name_ext = os.path.splitext(file_name)
-    out_file_name = file_name_ext[0] + "_amalgamated" + file_name_ext[1]
-    
-    print "\n   AMALGAMATOR    "
-    print "========================\nScanning file %s for user includes " % file_name
-    print "Resolving #includes in subdirectories of %s\n" % base_dir
+    print("\n   AMALGAMATOR    ")
+    print("========================\nScanning file %s for user includes " % file_name)
+    print("Resolving #includes in subdirectories of %s\n" % base_dir)
     
     unique_user_includes = []
     extract_user_includes(file_name, base_dir, unique_user_includes)
-    print "\nFound chain of %d unique user includes\n" % len(unique_user_includes)
+    print("\nFound chain of %d unique user includes\n" % len(unique_user_includes))
     
     unique_system_includes = []
     unique_system_c_includes = []
     extract_system_includes(unique_user_includes, unique_system_includes, unique_system_c_includes)
-    print "\nFound chain of %d unique system includes" % len(unique_system_includes)
-    print "Found chain of %d unique system \"C\" includes\n" % len(unique_system_c_includes)
+    print("\nFound chain of %d unique system includes" % len(unique_system_includes))
+    print("Found chain of %d unique system \"C\" includes\n" % len(unique_system_c_includes))
     unique_system_includes = sorted(unique_system_includes)
     unique_system_c_includes = sorted(unique_system_c_includes)
     
@@ -147,7 +151,7 @@ def main():
                         amalgam.write(include_file_contents)
                 includesAdded = True
                 
-    print "Created amalgamated header file in %s" % out_file_name
+    print("Created amalgamated header file in %s" % out_file_name)
     
 if __name__ == "__main__":
     # execute only if run as a script
