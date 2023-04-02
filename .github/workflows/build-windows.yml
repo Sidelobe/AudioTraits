@@ -1,6 +1,8 @@
 name: Sidelobe Build Matrix Windows
 on:
   workflow_call:
+    secrets: inherit
+    
 jobs:
   build:
     name: ${{matrix.os}}, MSVC, C++${{matrix.std}}, ${{matrix.build_type}}, ${{matrix.platform}}

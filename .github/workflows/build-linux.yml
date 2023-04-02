@@ -1,6 +1,8 @@
 name: Sidelobe Build Matrix Linux
 on:
   workflow_call:
+    secrets: inherit
+    
 jobs:
   build:
     name: Linux, ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
