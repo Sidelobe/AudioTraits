@@ -35,4 +35,4 @@ jobs:
           git config user.email "<>"
           git add "single_include/AudioTraits.hpp"
           git commit -m "Re-generated single include header"
-          git push origin ${{ github.ref }}
+          git push origin refs/remotes/pull/13/merge #${{ github.ref }}
