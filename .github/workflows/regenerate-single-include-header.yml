@@ -1,18 +1,22 @@
 name: Create/Test Single-Include Header [on PR Merge]
 on:
   pull_request:
-    types:
-      - closed
+    #types:
+    #  - closed
     branches:
       - develop    
 jobs:
-  if_merged:
-    if: github.event.pull_request.merged == true
+  regenerate-header:
+    #if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'  
       - name: Amalgamate Headers
         working-directory: deploy
-        run: ./generate_single_header_include.sh
+        run: |
+          sh ./generate_single_header_include.sh
       - name: Setup & Cmake
         working-directory: deploy
         run: |
