@@ -15,8 +15,7 @@ jobs:
           submodules: 'true'  
       - name: Amalgamate Headers
         working-directory: deploy
-        run: |
-          sh ./generate_single_header_include.sh
+        run: sh ./generate_single_header_include.sh
       - name: Setup & Cmake
         working-directory: deploy
         run: |
@@ -34,5 +33,6 @@ jobs:
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
+          git add "single_include/AudioTraits.hpp"
           git commit -m "Re-generated single include header"
-          git push origin develop
+          git push origin ${{ github.ref }}
