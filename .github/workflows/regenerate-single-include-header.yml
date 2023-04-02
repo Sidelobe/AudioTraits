@@ -1,0 +1,37 @@
+name: Create/Test Single-Include Header [on PR Merge]
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - develop
+  pull_request:
+    types: [opened, synchronize, reopened]
+    
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Amalgamate Headers
+        working-directory: deploy
+        run: ./generate_single_header_include.sh
+      - name: Setup & Cmake
+        working-directory: deploy
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DTEST_WITH_AMALGAMETED_HEADER=Yes ../..
+      - name: Build & Run Tests
+        env:
+          CTEST_OUTPUT_ON_FAILURE: 1
+        working-directory: deploy/build
+        run: |
+          cmake --build . --parallel 2
+          ctest -C ${{ matrix.build_type }} -L AudioTraitsTest -j 2
+      - name: Commit amalgamated file to GIT
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          git commit -m "Re-generated single include header"
+          git push origin develop
