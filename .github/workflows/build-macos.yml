@@ -1,8 +1,6 @@
 name: Sidelobe Build Matrix macos
 on:
   workflow_call:
-    secrets: inherit
-    
 jobs:
   build:
     name: ${{matrix.os}}, ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}

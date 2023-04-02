@@ -20,6 +20,7 @@ jobs:
   call-build-sonarqube:
     if: ${{ always() }}
     uses: ./.github/workflows/build-sonarqube.yml
+    secrets: inherit
 
   call-check-single-header:
     needs:

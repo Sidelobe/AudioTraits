@@ -1,8 +1,6 @@
 name: Sidelobe Build Sonarqube
 on:
   workflow_call:
-    secrets: inherit
-    
 jobs:
   build:
     name: Linux, GCC, Release, Coverage & SonarQube
