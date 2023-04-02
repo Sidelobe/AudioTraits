@@ -5,7 +5,8 @@
 //
 //  © 2021 Lorenz Bucher - all rights reserved
 
-#include "SignalAdapters.hpp"
+#include "AudioTraits.hpp"
+//#include "SignalAdapters.hpp"
 
 #include "TestCommon.hpp"
 #include "SignalGenerator.hpp"

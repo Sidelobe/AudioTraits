@@ -4,7 +4,7 @@
   ╩ ╩└─┘─┴┘┴└─┘ ╩ ┴└─┴ ┴┴ ┴ └─┘
 ```
 
-### An extensible testing abstraction for audio signals
+### An extensible C++ testing abstraction for audio signals
 
 ![](https://img.shields.io/github/license/Sidelobe/AudioTraits)
 ![](https://img.shields.io/badge/C++14-header--only-blue.svg?style=flat&logo=c%2B%2B)
@@ -69,11 +69,11 @@ struct HasOddNumberOfSamples
 {
     static bool eval(const ISignal& signal, const std::set<int>& selectedChannels)
     {
-    	if (signal.getNumSamples() % 2 == 0) {
-			return false; // number of samples is even
-    	} else {
-    		return true; // number of samples is odd
-    	}
+        if (signal.getNumSamples() % 2 == 0) {
+            return false; // number of samples is even
+        } else {
+            return true; // number of samples is odd
+        }
     }
 };
 ```
@@ -87,10 +87,9 @@ struct HasOddNumberOfSamples
 
  - C++14, STL only
  - Compiled & Tested with:
- 	- GCC/g++ 9.3.0 (Linux) for `x86_64` and `ARM64` architectures
-	- Clang 11 (Xcode 11.6, macos)
-	- MSVC++ 19.28 (Visual Studio 2019, Windows) 
-
+ 	- Linux / macos / Windwos
+ 	- GCC, Clang and MSVC
+ 	- `x86_64` and `arm64` architectures
 	
 ### Build Status / Quality Metrics
 
