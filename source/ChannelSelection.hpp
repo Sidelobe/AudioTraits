@@ -23,7 +23,7 @@ public:
     /** Discrete (deliberately non-explicit ctor) */
     SelectionItem(int channel) : m_selection({channel})
     {
-        ASSERT(channel > 0, "invalid channel!");
+        SLB_ASSERT(channel > 0, "invalid channel!");
     }
     
     /**
@@ -32,7 +32,7 @@ public:
      */
     SelectionItem(int first, int last) : m_selection(last - first + 1)
     {
-        ASSERT(first > 0 && last >= first, "invalid range!");
+        SLB_ASSERT(first > 0 && last >= first, "invalid range!");
         std::iota(m_selection.begin(), m_selection.end(), first);
     }
     

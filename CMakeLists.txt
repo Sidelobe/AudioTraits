@@ -41,7 +41,7 @@ set(ASAN OFF CACHE BOOL "Build with address sanitizer enabled")
 file(GLOB_RECURSE source "source/*.h*")
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME} INTERFACE ${source})
-target_include_directories(${PROJECT_NAME} INTERFACE ${source})
+target_include_directories(${PROJECT_NAME} INTERFACE "source")
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 
 # TEST TARGET

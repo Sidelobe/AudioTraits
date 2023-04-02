@@ -14,12 +14,12 @@
     #define __has_feature(x) 0
 #endif
 #if !__has_feature(cxx_exceptions) && !defined(__cpp_exceptions) && !defined(__EXCEPTIONS) && !defined(_CPPUNWIND)
-  #define EXCEPTIONS_DISABLED
+  #define SLB_EXCEPTIONS_DISABLED
 #endif
 
-// When exceptions are disbled, we redefine catch2's REQUIRE_THROWS, so we can compile.
+// When exceptions are disabled, we redefine catch2's REQUIRE_THROWS, so we can compile.
 // Any REQUIRE_THROWS statements in tests will dissappear / do nothing
-#ifdef EXCEPTIONS_DISABLED
+#ifdef SLB_EXCEPTIONS_DISABLED
     #define REQUIRE_THROWS_CATCH2 REQUIRE_THROWS
     #undef REQUIRE_THROWS
     #define REQUIRE_THROWS(...)

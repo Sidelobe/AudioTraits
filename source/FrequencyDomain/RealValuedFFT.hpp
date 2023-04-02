@@ -52,7 +52,7 @@ public:
         } else if (N == 8 || N == 32 || N == 128 || N == 512 || N == 2048 || N == 8192) {
             m_radix = 2; // is power of 2 and not of 4 (exponent odd?)
         } else {
-            ASSERT_ALWAYS("Length not supported");
+            SLB_ASSERT_ALWAYS("Length not supported");
         }
 
         tw_gen(reinterpret_cast<float*>(&m_twiddleTable[0]), N);
@@ -62,7 +62,7 @@ public:
     /** Calculates the FFT for a real-valued input - using a split-complex FFT */
     std::vector<std::complex<float>> performForward(const std::vector<float>& realInput)
     {
-        ASSERT(realInput.size() >= m_fftLength, "Signal length must match FFT Size"); // TODO: zero-padding
+        SLB_ASSERT(realInput.size() >= m_fftLength, "Signal length must match FFT Size"); // TODO: zero-padding
         
         // Trick: We calculate a complex FFT of length N/2  ('split complex FFT')
         const int N = m_fftLength / 2;
