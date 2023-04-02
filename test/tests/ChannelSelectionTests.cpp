@@ -7,7 +7,8 @@
 
 #include "TestCommon.hpp"
 
-#include "ChannelSelection.hpp"
+#include "AudioTraits.hpp"
+//#include "ChannelSelection.hpp"
 
 using namespace slb;
 
