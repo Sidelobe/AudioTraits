@@ -12,8 +12,11 @@
 #include <algorithm>
 #include <vector>
 
-#include "AudioTraits.hpp"
-//#include "Utils.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "AudioTraits.hpp"
+#else
+    #include "Utils.hpp"
+#endif
 
 using namespace slb;
 using namespace AudioTraits;

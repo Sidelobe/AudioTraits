@@ -8,11 +8,13 @@
 
 #pragma once
 
-#include "AudioTraits.hpp"
-//#include "SignalAdapters.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "AudioTraits.hpp"
+#else
+    #include "SignalAdapters.hpp"
+#endif
 
 #include "AudioFile.h" // include https://github.com/adamstark/AudioFile
-
 
 /** An adapter for AudioFile objects */
 template<typename T>

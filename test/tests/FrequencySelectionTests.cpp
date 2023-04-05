@@ -8,8 +8,11 @@
 
 #include "TestCommon.hpp"
 
-#include "AudioTraits.hpp"
-//#include "FrequencySelection.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "AudioTraits.hpp"
+#else
+    #include "FrequencySelection.hpp"
+#endif
 
 using namespace slb;
 

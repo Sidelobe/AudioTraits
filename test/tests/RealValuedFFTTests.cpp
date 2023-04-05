@@ -12,8 +12,11 @@
 #include <numeric>
 #include <iostream>
 
-#include "AudioTraits.hpp"
-//#include "FrequencyDomain/RealValuedFFT.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "AudioTraits.hpp"
+#else
+    #include "FrequencyDomain/RealValuedFFT.hpp"
+#endif
 
 using namespace slb;
 using namespace slb::AudioTraits;
