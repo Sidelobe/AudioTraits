@@ -94,10 +94,10 @@ struct HasOddNumberOfSamples
 ### Build Status / Quality Metrics
 
 ![](https://img.shields.io/badge/branch-main-blue)
-[![Sidelobe Build Matrix Linux](https://github.com/Sidelobe/AudioTraits/actions/workflows/build-linux.yml/badge.svg?branch=main)](https://github.com/Sidelobe/AudioTraits/actions/workflows/build-linux.yml)
-[![Sidelobe Build Matrix macos](https://github.com/Sidelobe/AudioTraits/actions/workflows/build-macos.yml/badge.svg?branch=main)](https://github.com/Sidelobe/AudioTraits/actions/workflows/build-macos.yml)
-[![Sidelobe Build Matrix macos](https://github.com/Sidelobe/AudioTraits/actions/workflows/build-windows.yml/badge.svg?branch=main)](https://github.com/Sidelobe/AudioTraits/actions/workflows/build-windows.yml)
+[![Build & Test](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml/badge.svg?branch=main)](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+![](https://img.shields.io/badge/branch-develop-blue)
+[![Build & Test](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml/badge.svg?branch=develop)](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)

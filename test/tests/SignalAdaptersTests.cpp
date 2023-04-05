@@ -2,15 +2,19 @@
 //  ╔═╗┬ ┬┌┬┐┬┌─┐╔╦╗┬─┐┌─┐┬┌┬┐┌─┐
 //  ╠═╣│ │ ││││ │ ║ ├┬┘├─┤│ │ └─┐
 //  ╩ ╩└─┘─┴┘┴└─┘ ╩ ┴└─┴ ┴┴ ┴ └─┘
-//
-//  © 2021 Lorenz Bucher - all rights reserved
-
-#include "AudioTraits.hpp"
-//#include "SignalAdapters.hpp"
+//  
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/AudioTraits
 
 #include "TestCommon.hpp"
 #include "SignalGenerator.hpp"
 #include "AudioFileSignalAdapter.hpp"
+
+#ifdef SLB_AMALGATED_HEADER
+#include "AudioTraits.hpp"
+#else
+#include "SignalAdapters.hpp"
+#endif
 
 using namespace TestCommon;
 using namespace slb;

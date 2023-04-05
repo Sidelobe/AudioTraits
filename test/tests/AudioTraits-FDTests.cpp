@@ -2,8 +2,9 @@
 //  ╔═╗┬ ┬┌┬┐┬┌─┐╔╦╗┬─┐┌─┐┬┌┬┐┌─┐
 //  ╠═╣│ │ ││││ │ ║ ├┬┘├─┤│ │ └─┐
 //  ╩ ╩└─┘─┴┘┴└─┘ ╩ ┴└─┴ ┴┴ ┴ └─┘
-//
-//  © 2021 Lorenz Bucher - all rights reserved
+//  
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/AudioTraits
 
 #include "TestCommon.hpp"
 #include "SignalGenerator.hpp"
@@ -11,11 +12,14 @@
 #include <algorithm>
 #include <vector>
 
-#include "AudioTraits.hpp"
-#include "AudioFile.h"
-//#include "Utils.hpp"
-//#include "AudioFileSignalAdapter.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "AudioTraits.hpp"
+#else
+    #include "Utils.hpp"
+    #include "AudioFileSignalAdapter.hpp"
+#endif
 
+#include "AudioFile.h"
 //#include "matplotlibcpp.h"
 
 using namespace slb;

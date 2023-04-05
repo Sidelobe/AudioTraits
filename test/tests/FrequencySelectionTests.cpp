@@ -2,13 +2,17 @@
 //  ╔═╗┬ ┬┌┬┐┬┌─┐╔╦╗┬─┐┌─┐┬┌┬┐┌─┐
 //  ╠═╣│ │ ││││ │ ║ ├┬┘├─┤│ │ └─┐
 //  ╩ ╩└─┘─┴┘┴└─┘ ╩ ┴└─┴ ┴┴ ┴ └─┘
-//
-//  © 2021 Lorenz Bucher - all rights reserved
+//  
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/AudioTraits
 
 #include "TestCommon.hpp"
 
-#include "AudioTraits.hpp"
-//#include "FrequencySelection.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "AudioTraits.hpp"
+#else
+    #include "FrequencySelection.hpp"
+#endif
 
 using namespace slb;
 

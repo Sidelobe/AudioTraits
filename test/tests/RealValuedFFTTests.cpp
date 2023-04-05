@@ -2,8 +2,9 @@
 //  ╔═╗┬ ┬┌┬┐┬┌─┐╔╦╗┬─┐┌─┐┬┌┬┐┌─┐
 //  ╠═╣│ │ ││││ │ ║ ├┬┘├─┤│ │ └─┐
 //  ╩ ╩└─┘─┴┘┴└─┘ ╩ ┴└─┴ ┴┴ ┴ └─┘
-//
-//  © 2021 Lorenz Bucher - all rights reserved
+//  
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/AudioTraits
 
 #include "TestCommon.hpp"
 #include "SignalGenerator.hpp"
@@ -11,8 +12,11 @@
 #include <numeric>
 #include <iostream>
 
-#include "AudioTraits.hpp"
-//#include "FrequencyDomain/RealValuedFFT.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "AudioTraits.hpp"
+#else
+    #include "FrequencyDomain/RealValuedFFT.hpp"
+#endif
 
 using namespace slb;
 using namespace slb::AudioTraits;

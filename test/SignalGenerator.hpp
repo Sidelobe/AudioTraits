@@ -2,8 +2,9 @@
 //  ╔═╗┬ ┬┌┬┐┬┌─┐╔╦╗┬─┐┌─┐┬┌┬┐┌─┐
 //  ╠═╣│ │ ││││ │ ║ ├┬┘├─┤│ │ └─┐
 //  ╩ ╩└─┘─┴┘┴└─┘ ╩ ┴└─┴ ┴┴ ┴ └─┘
-//
-//  © 2021 Lorenz Bucher - all rights reserved
+//  
+//  © 2023 Lorenz Bucher - all rights reserved
+//  https://github.com/Sidelobe/AudioTraits
 
 #pragma once
 
@@ -12,10 +13,14 @@
 #include <set>
 #include <random>
 
-#include "AudioTraits.hpp"
-//#include "Utils.hpp"
-//#include "FrequencySelection.hpp"
-//#include "FrequencyDomain/Helpers.hpp"
+#ifdef SLB_AMALGATED_HEADER
+    #include "AudioTraits.hpp"
+#else
+    #include "AudioTraits.hpp"
+    #include "FrequencySelection.hpp"
+    #include "FrequencyDomain/Helpers.hpp"
+    #include "Utils.hpp"
+#endif
 
 // TODO: consider moving to production code.
 
