@@ -48,7 +48,7 @@ public:
     int getNumChannels() const override { return m_numChannels; }
     int getNumSamples()  const override { return m_numSamples;  }
     const float* const* getData() const override { return nullptr; }
-    std::vector<float> getChannelDataCopy(int channelIndex) const override { return {}; UNUSED(channelIndex); }
+    std::vector<float> getChannelDataCopy(int channelIndex) const override { return {}; SLB_UNUSED(channelIndex); }
 private:
     const int m_numChannels;
     const int m_numSamples;

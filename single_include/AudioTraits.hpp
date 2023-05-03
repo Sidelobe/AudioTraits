@@ -40,7 +40,7 @@ extern "C"
 
 
 
-#define UNUSED(x) (void)x
+#define SLB_UNUSED(x) (void)x
 
 /* Macro to detect if exceptions are disabled (works on GCC, Clang and MSVC) 3 */
 #ifndef __has_feature
@@ -88,7 +88,7 @@ static constexpr void handleAssert(const char* conditionAsText, bool condition, 
     }
     
 #ifdef SLB_EXCEPTIONS_DISABLED
-    UNUSED(conditionAsText); UNUSED(file); UNUSED(line); UNUSED(message);
+    SLB_UNUSED(conditionAsText); SLB_UNUSED(file); SLB_UNUSED(line); SLB_UNUSED(message);
     assert(0 && message);
 #else
     throw std::runtime_error(std::string("Assertion failed: ") + conditionAsText + " (" + file + ":" + std::to_string(line) + ") " + message);
