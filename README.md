@@ -94,17 +94,15 @@ struct HasOddNumberOfSamples
 ### Build Status / Quality Metrics
 
 ![](https://img.shields.io/badge/branch-main-blue)
-[![Build & Test](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml/badge.svg?branch=main)](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml)
+[![Build & Test AudioTraits](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml/badge.svg)](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ![](https://img.shields.io/badge/branch-develop-blue)
-[![Build & Test](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml/badge.svg?branch=develop)](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml)
+[![Build & Test AudioTraits](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml/badge.svg?branch=develop)](https://github.com/Sidelobe/AudioTraits/actions/workflows/workflow.yml)
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Sidelobe_MemorySentinel)
+
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=Sidelobe_AudioTraits)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=security_rating)](https://sonarcloud.io/dashboard?id=Sidelobe_AudioTraits)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=sqale_index)](https://sonarcloud.io/dashboard?id=Sidelobe_AudioTraits)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Sidelobe_AudioTraits&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Sidelobe_AudioTraits)	
+
