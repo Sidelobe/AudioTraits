@@ -36,7 +36,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CODE_COVERAGE OFF CACHE BOOL "Build with instrumentation and code coverage")
 set(ASAN OFF CACHE BOOL "Build with address sanitizer enabled")
-set(TEST_WITH_AMALGAMETED_HEADER OFF CACHE BOOL "Build & Test with Amalgamated header instead of source files")
+set(TEST_WITH_AMALGAMATED_HEADER OFF CACHE BOOL "Build & Test with Amalgamated header instead of source files")
 
 # SOURCE TARGET --- "interface", since we have a header-only library
 add_library(${PROJECT_NAME} INTERFACE)
@@ -164,7 +164,8 @@ endif()
 
 
 ## ENABLE THE USE OF CTEST 
-include("test/external-utils/catch2/ParseAndAddCatchTests.cmake")
+include("test/external-utils/catch2/Catch.cmake")
+
 #include(CTest) # this will generate lots of additional targets
 enable_testing()
-ParseAndAddCatchTests(${TEST_NAME})
+catch_discover_tests(${TEST_NAME})
