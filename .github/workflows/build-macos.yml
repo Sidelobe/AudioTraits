@@ -34,5 +34,5 @@ jobs:
         CTEST_OUTPUT_ON_FAILURE: 1
       working-directory: deploy/build
       run: |
-        cmake --build . --parallel 2 --target HyperBufferTest
+        cmake --build . --parallel 2 --target AudioTraitsTest
         ctest -C ${{ matrix.build_type }} -E Sentinel  
