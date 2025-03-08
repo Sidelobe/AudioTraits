@@ -47,12 +47,12 @@ constexpr float sampleRate = 48000;
 // signal on chan 1 has content at around 1000Hz
 REQUIRE(check<HasSignalInAllBands>(signal, {1}, Freqs{1000}, sampleRate));
 // signal has content in the band 500Hz-1000Hz in all channels
-REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{500, 1000}, sampleRate));
+REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{{500, 1000}}, sampleRate));
 // signal has content in 100Hz-200Hz that is -30dB below the maximum over the entire spectrum
-REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{100, 200}, sampleRate, -30.f));
+REQUIRE(check<HasSignalInAllBands>(signal, {}, Freqs{{100, 200}}, sampleRate, -30.f));
 
 // signal only has content above -5dB in the band 20-5000 Hz (relative to the spectral maximum)
-REQUIRE(check<HasSignalOnlyInBands>(signal, {}, Freqs{20, 5000}, sampleRate, -5.f));
+REQUIRE(check<HasSignalOnlyInBands>(signal, {}, Freqs{{20, 5000}}, sampleRate, -5.f));
 // signal only has content below 4kHz in all channels
 REQUIRE(check<HasSignalOnlyBelow>(signal, {}, 4000, sampleRate));
 
